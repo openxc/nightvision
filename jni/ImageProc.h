@@ -24,6 +24,9 @@
 #include <linux/videodev2.h>
 #include <linux/usbdevice_fs.h>
 
+#include "cv.h"
+#include "highgui.h"
+
 #define  LOG_TAG    "TEST"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -83,3 +86,4 @@ jint Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* e
 void Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap);                                                  
+void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject thiz,jobject bitmap);

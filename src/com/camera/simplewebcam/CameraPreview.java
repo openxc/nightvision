@@ -43,6 +43,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     public native int prepareCameraWithBase(int videoid, int camerabase);
     public native void processCamera();
     public native void stopCamera();
+    public native void edgeDetect(Bitmap bitmap);
     public native void pixeltobmp(Bitmap bitmap);
     static {
         System.loadLibrary("ImageProc");
@@ -84,6 +85,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         	processCamera();
         	// camera image to bmp
         	pixeltobmp(bmp);
+        	edgeDetect(bmp);
         	
             Canvas canvas = getHolder().lockCanvas();
             if (canvas != null)

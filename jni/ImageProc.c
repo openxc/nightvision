@@ -1,5 +1,10 @@
 #include "ImageProc.h"
 
+#include "cv.h"
+#include "ml.h"
+#include "cxcore.h"
+#include "highgui.h"
+
 int errnoexit(const char *s)
 {
 	LOGE("%s error %d, %s", s, errno, strerror (errno));
@@ -516,5 +521,17 @@ Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
         
 	fd = -1;
 
+}
+void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject thiz,jobject bitmap){
+	/*IplImage *originalImage  = cvLoadImage("test.jpg",-1);
+	        IplImage *grayScaleImage;
+	        grayScaleImage = cvCreateImage(cvSize(320,240),8,1);
+	        cvCvtColor(originalImage, grayScaleImage, CV_BGR2GRAY);
+	        IplImage * edgeImage;
+	        edgeImage = cvCreateImage(cvSize(320,240), 8, 1);
+	        cvCanny(grayScaleImage, edgeImage, 0.5, 0.5, 3);
+	        cvSaveImage("Resultant.jpg",edgeImage, 0);
+	        cvReleaseImage(&edgeImage);
+	        cvReleaseImage(&grayScaleImage);*/
 }
 

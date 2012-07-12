@@ -15,6 +15,7 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+include /home/sskinger/Desktop/projects/android-opencv/OpenCV-2.4.2-android-sdk/sdk/native/jni/OpenCV.mk
 
 LOCAL_MODULE    := ImageProc
 LOCAL_SRC_FILES := ImageProc.c
