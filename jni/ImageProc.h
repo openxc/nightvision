@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+#include <stddef.h>
 #include <asm/types.h>          /* for videodev2.h */
 
 #include <linux/videodev2.h>

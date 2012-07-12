@@ -46,7 +46,9 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     public native void edgeDetect(Bitmap bitmap);
     public native void pixeltobmp(Bitmap bitmap);
     static {
+        System.loadLibrary("opencv_java");
         System.loadLibrary("ImageProc");
+       
     }
     
 	CameraPreview(Context context) {

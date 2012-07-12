@@ -523,7 +523,7 @@ Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 
 }
 void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject thiz,jobject bitmap){
-	/*IplImage *originalImage  = cvLoadImage("test.jpg",-1);
+	IplImage *originalImage  = cvLoadImage("test.jpg",-1);
 	        IplImage *grayScaleImage;
 	        grayScaleImage = cvCreateImage(cvSize(320,240),8,1);
 	        cvCvtColor(originalImage, grayScaleImage, CV_BGR2GRAY);
@@ -532,6 +532,6 @@ void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject 
 	        cvCanny(grayScaleImage, edgeImage, 0.5, 0.5, 3);
 	        cvSaveImage("Resultant.jpg",edgeImage, 0);
 	        cvReleaseImage(&edgeImage);
-	        cvReleaseImage(&grayScaleImage);*/
+	        cvReleaseImage(&grayScaleImage);
 }
 
