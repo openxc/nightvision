@@ -21,7 +21,7 @@ public class Main extends Activity {
         {
             Log.e(TAG, "Cannot connect to OpenCV Manager");
         }
-		
+		setContentView(R.layout.main);
 		cp = new CameraPreview(this);
 		setContentView(cp);
 	}

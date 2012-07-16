@@ -45,6 +45,17 @@ struct buffer {
         size_t                  length;
 };
 
+
+typedef struct
+{
+
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t alpha;
+
+} argb;
+
 static char            dev_name[16];
 static int              fd              = -1;
 struct buffer *         buffers         = NULL;
@@ -87,4 +98,4 @@ jint Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* e
 void Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap);                                                  
-void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject thiz,jobject bitmap);
+void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor);

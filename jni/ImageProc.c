@@ -4,6 +4,8 @@
 #include "ml.h"
 #include "cxcore.h"
 #include "highgui.h"
+#include <android/log.h>
+#include <android/bitmap.h>
 
 int errnoexit(const char *s)
 {
@@ -406,7 +408,30 @@ void yuyv422toABGRY(unsigned char *src)
 	}
 
 }
+/*
+// Convert .NET Bitmap to an OpenCV IplImage..
+static bitmapToIplImage (Bitmap* bitmap) {
 
+	IplImage* tmp;
+
+	BitmapData^ bmData = bitmap->LockBits( System::Drawing: :Rectangle( 0, 0, bitmap->Width, bitmap->Height) , System::Drawing: :Imaging: :ImageLockMode: :ReadWrite, bitmap->PixelFormat );
+	if(bitmap->PixelFor mat == System::Drawing: :Imaging: :PixelFormat: :Format8bppIndex ed)
+	{
+	tmp = cvCreateImage( cvSize(bitmap- >Width , bitmap->Height) , IPL_DEPTH_8U , 1);
+	tmp->imageData = (char*)bmData- >Scan0.ToPointer ();
+	}
+
+	else if (bitmap->PixelForma t == System::Drawing: :Imaging: :PixelFormat: :Format24bppRgb)
+	{
+	tmp = cvCreateImage( cvSize(bitmap- >Width , bitmap->Height) , IPL_DEPTH_8U , 3);
+	tmp->imageData = (char*)bmData- >Scan0.ToPointer ();
+	}
+
+	bitmap->UnlockBits( bmData);
+
+	return tmp;
+}
+*/
 
 void 
 Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap){
@@ -522,16 +547,46 @@ Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 	fd = -1;
 
 }
-void Java_com_camera_simplewebcam_CameraPreview_edgeDetect( JNIEnv* env,jobject thiz,jobject bitmap){
-	IplImage *originalImage  = cvLoadImage("test.jpg",-1);
-	        IplImage *grayScaleImage;
-	        grayScaleImage = cvCreateImage(cvSize(320,240),8,1);
-	        cvCvtColor(originalImage, grayScaleImage, CV_BGR2GRAY);
-	        IplImage * edgeImage;
-	        edgeImage = cvCreateImage(cvSize(320,240), 8, 1);
-	        cvCanny(grayScaleImage, edgeImage, 0.5, 0.5, 3);
-	        cvSaveImage("Resultant.jpg",edgeImage, 0);
-	        cvReleaseImage(&edgeImage);
-	        cvReleaseImage(&grayScaleImage);
+void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor){
+
+	    AndroidBitmapInfo  infocolor;
+	    void*              pixelscolor;
+	    int                ret;
+	    int             y;
+	    int             x;
+
+	    //LOGI("convertToGray");
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+	        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	        return;
+	    }
+
+	    //LOGI("color image :: width is %d; height is %d; stride is %d; format is %d;flags is %d",infocolor.width,infocolor.height,infocolor.stride,infocolor.format,infocolor.flags);
+	    if (infocolor.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+	        LOGE("Bitmap format is not RGBA_8888 !");
+	        return;
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+	        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	   // modify pixels with image processing algorithm
+
+	    for (y=0;y<infocolor.height;y++) {
+	        argb * line = (argb *) pixelscolor;
+	        for (x=0;x<infocolor.width;x++) {
+	        	int val = 0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue;
+	        	line[x].red = val;
+	        	line[x].green = val;
+	        	line[x].blue = val;
+	        }
+
+	        pixelscolor = (char *)pixelscolor + infocolor.stride;
+	    }
+
+	    //LOGI("unlocking pixels");
+	    AndroidBitmap_unlockPixels(env, bitmapcolor);
+
 }
 

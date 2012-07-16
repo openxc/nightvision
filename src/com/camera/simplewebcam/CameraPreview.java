@@ -15,7 +15,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	private SurfaceHolder holder;
     Thread mainLoop = null;
 	private Bitmap bmp=null;
-
+	
 	private boolean cameraExists=false;
 	private boolean shouldStop=false;
 	
@@ -43,8 +43,9 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     public native int prepareCameraWithBase(int videoid, int camerabase);
     public native void processCamera();
     public native void stopCamera();
-    public native void edgeDetect(Bitmap bitmap);
+    public native void toGrayscale(Bitmap bitmap);
     public native void pixeltobmp(Bitmap bitmap);
+    public native void detectEdges(Bitmap bitmap);
     static {
         System.loadLibrary("opencv_java");
         System.loadLibrary("ImageProc");
@@ -87,8 +88,8 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         	processCamera();
         	// camera image to bmp
         	pixeltobmp(bmp);
-        	edgeDetect(bmp);
-        	
+        	toGrayscale(bmp);
+                        
             Canvas canvas = getHolder().lockCanvas();
             if (canvas != null)
             {
@@ -111,6 +112,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 		if(bmp==null){
 			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
 		}
+		
 		// /dev/videox (x=cameraId + cameraBase) is used
 		int ret = prepareCameraWithBase(cameraId, cameraBase);
 		
