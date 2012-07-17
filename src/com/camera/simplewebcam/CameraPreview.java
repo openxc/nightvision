@@ -15,6 +15,9 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	private SurfaceHolder holder;
     Thread mainLoop = null;
 	private Bitmap bmp=null;
+	private Bitmap bmpgray=null;
+	private Bitmap bmpedges=null;
+	
 	
 	private boolean cameraExists=false;
 	private boolean shouldStop=false;
@@ -43,9 +46,10 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     public native int prepareCameraWithBase(int videoid, int camerabase);
     public native void processCamera();
     public native void stopCamera();
-    public native void toGrayscale(Bitmap bitmap);
+    public native void toGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
     public native void pixeltobmp(Bitmap bitmap);
-    public native void detectEdges(Bitmap bitmap);
+    public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
+    public native void showBitmap(Bitmap bitmapedges, Bitmap bitmapout);
     static {
         System.loadLibrary("opencv_java");
         System.loadLibrary("ImageProc");
@@ -88,17 +92,20 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         	processCamera();
         	// camera image to bmp
         	pixeltobmp(bmp);
-        	toGrayscale(bmp);
-                        
+        	toGrayscale(bmp, bmpgray);
+        	detectEdges(bmpgray, bmpedges);
+        	showBitmap(bmpedges, bmp);
+        	
+                       
             Canvas canvas = getHolder().lockCanvas();
             if (canvas != null)
             {
             	// draw camera bmp on canvas
             	canvas.drawBitmap(bmp,null,rect,null);
-
             	getHolder().unlockCanvasAndPost(canvas);
-            }
 
+            }
+            
             if(shouldStop){
             	shouldStop = false;  
             	break;
@@ -112,7 +119,13 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 		if(bmp==null){
 			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
 		}
-		
+		if(bmpgray==null){
+            bmpgray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
+        }
+	      if(bmpedges==null){
+	            bmpedges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
+	        }
+
 		// /dev/videox (x=cameraId + cameraBase) is used
 		int ret = prepareCameraWithBase(cameraId, cameraBase);
 		

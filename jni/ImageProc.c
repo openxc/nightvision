@@ -27,7 +27,7 @@ int checkCamerabase(void){
 	struct stat st;
 	int i;
 	int start_from_4 = 1;
-	
+
 	/* if /dev/video[0-3] exist, camerabase=4, otherwise, camrerabase = 0 */
 	for(i=0 ; i<4 ; i++){
 		sprintf(dev_name,"/dev/video%d",i);
@@ -96,7 +96,7 @@ int initdevice(void)
 		LOGE("%s does not support streaming i/o", dev_name);
 		return ERROR_LOCAL;
 	}
-	
+
 	CLEAR (cropcap);
 
 	cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -107,10 +107,10 @@ int initdevice(void)
 
 		if (-1 == xioctl (fd, VIDIOC_S_CROP, &crop)) {
 			switch (errno) {
-				case EINVAL:
-					break;
-				default:
-					break;
+			case EINVAL:
+				break;
+			default:
+				break;
 			}
 		}
 	} else {
@@ -162,7 +162,7 @@ int initmmap(void)
 	if (req.count < 2) {
 		LOGE("Insufficient buffer memory on %s", dev_name);
 		return ERROR_LOCAL;
- 	}
+	}
 
 	buffers = calloc (req.count, sizeof (*buffers));
 
@@ -174,7 +174,7 @@ int initmmap(void)
 	for (n_buffers = 0; n_buffers < req.count; ++n_buffers) {
 		struct v4l2_buffer buf;
 
-		 CLEAR (buf);
+		CLEAR (buf);
 
 		buf.type        = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		buf.memory      = V4L2_MEMORY_MMAP;
@@ -185,11 +185,11 @@ int initmmap(void)
 
 		buffers[n_buffers].length = buf.length;
 		buffers[n_buffers].start =
-		mmap (NULL ,
-			buf.length,
-			PROT_READ | PROT_WRITE,
-			MAP_SHARED,
-			fd, buf.m.offset);
+				mmap (NULL ,
+						buf.length,
+						PROT_READ | PROT_WRITE,
+						MAP_SHARED,
+						fd, buf.m.offset);
 
 		if (MAP_FAILED == buffers[n_buffers].start)
 			return errnoexit ("mmap");
@@ -264,7 +264,7 @@ int readframeonce(void)
 
 void processimage (const void *p)
 {
-		yuyv422toABGRY((unsigned char *)p);
+	yuyv422toABGRY((unsigned char *)p);
 }
 
 int readframe(void)
@@ -280,11 +280,11 @@ int readframe(void)
 
 	if (-1 == xioctl (fd, VIDIOC_DQBUF, &buf)) {
 		switch (errno) {
-			case EAGAIN:
-				return 0;
-			case EIO:
-			default:
-				return errnoexit ("VIDIOC_DQBUF");
+		case EAGAIN:
+			return 0;
+		case EIO:
+		default:
+			return errnoexit ("VIDIOC_DQBUF");
 		}
 	}
 
@@ -355,7 +355,7 @@ void yuyv422toABGRY(unsigned char *src)
 	}
 	int *lrgb = NULL;
 	int *lybuf = NULL;
-		
+
 	lrgb = &rgb[0];
 	lybuf = &ybuf[0];
 
@@ -408,36 +408,9 @@ void yuyv422toABGRY(unsigned char *src)
 	}
 
 }
-/*
-// Convert .NET Bitmap to an OpenCV IplImage..
-static bitmapToIplImage (Bitmap* bitmap) {
-
-	IplImage* tmp;
-
-	BitmapData^ bmData = bitmap->LockBits( System::Drawing: :Rectangle( 0, 0, bitmap->Width, bitmap->Height) , System::Drawing: :Imaging: :ImageLockMode: :ReadWrite, bitmap->PixelFormat );
-	if(bitmap->PixelFor mat == System::Drawing: :Imaging: :PixelFormat: :Format8bppIndex ed)
-	{
-	tmp = cvCreateImage( cvSize(bitmap- >Width , bitmap->Height) , IPL_DEPTH_8U , 1);
-	tmp->imageData = (char*)bmData- >Scan0.ToPointer ();
-	}
-
-	else if (bitmap->PixelForma t == System::Drawing: :Imaging: :PixelFormat: :Format24bppRgb)
-	{
-	tmp = cvCreateImage( cvSize(bitmap- >Width , bitmap->Height) , IPL_DEPTH_8U , 3);
-	tmp->imageData = (char*)bmData- >Scan0.ToPointer ();
-	}
-
-	bitmap->UnlockBits( bmData);
-
-	return tmp;
-}
-*/
 
 void 
 Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap){
-
-	jboolean bo;
-
 
 	AndroidBitmapInfo  info;
 	void*              pixels;
@@ -452,7 +425,7 @@ Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,
 		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
 		return;
 	}
-    
+
 	width = info.width;
 	height = info.height;
 
@@ -516,18 +489,18 @@ Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject th
 
 jint 
 Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase){
-	
-		int ret;
 
-		camerabase = videobase;
-	
-		return Java_com_camera_simplewebcam_CameraPreview_prepareCamera(env,thiz,videoid);
-	
+	int ret;
+
+	camerabase = videobase;
+
+	return Java_com_camera_simplewebcam_CameraPreview_prepareCamera(env,thiz,videoid);
+
 }
 
 void 
 Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,
-										jobject thiz){
+		jobject thiz){
 
 	readframeonce();
 }
@@ -543,50 +516,237 @@ Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 
 	if(rgb) free(rgb);
 	if(ybuf) free(ybuf);
-        
+
 	fd = -1;
+}
+
+void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray){
+	AndroidBitmapInfo  infocolor;
+	void*              pixelscolor;
+	AndroidBitmapInfo  infogray;
+	void*              pixelsgray;
+	int                ret;
+	int             y;
+	int             x;
+
+
+	//LOGI("convertToGray");
+	if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	// modify pixels with image processing algorithm
+	for (y=0;y<infocolor.height;y++) {
+		argb * line = (argb *) pixelscolor;
+		uint8_t * grayline = (uint8_t *) pixelsgray;
+		for (x=0;x<infocolor.width;x++) {
+			grayline[x] = 0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue;
+		}
+
+		pixelscolor = (char *)pixelscolor + infocolor.stride;
+		pixelsgray = (char *) pixelsgray + infogray.stride;
+	}
+
+	//LOGI("unlocking pixels");
+	AndroidBitmap_unlockPixels(env, bitmapcolor);
+	AndroidBitmap_unlockPixels(env, bitmapgray);
+
+	/*AndroidBitmapInfo  infocolor;
+	void*              pixelscolor;
+	int                ret;
+	int             y;
+	int             x;
+
+	//LOGI("convertToGray");
+	if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
+		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	//LOGI("color image :: width is %d; height is %d; stride is %d; format is %d;flags is %d",infocolor.width,infocolor.height,infocolor.stride,infocolor.format,infocolor.flags);
+	if (infocolor.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+		LOGE("Bitmap format is not RGBA_8888 !");
+		return;
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	// modify pixels with image processing algorithm
+	for (y=0;y<infocolor.height;y++) {
+		argb * line = (argb *) pixelscolor;
+		for (x=0;x<infocolor.width;x++) {
+			int val = 0.299 * line[x].red + 0.587 * line[x].green + 0.114 * line[x].blue;
+			line[x].red = val;
+			line[x].green = val;
+			line[x].blue = val;
+		}
+		pixelscolor = (char *)pixelscolor + infocolor.stride;
+	}
+	//LOGI("unlocking pixels");
+	AndroidBitmap_unlockPixels(env, bitmapcolor);*/
+}
+
+void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapgray, jobject bitmapedges){
+
+	AndroidBitmapInfo  infogray;
+	void*              pixelsgray;
+	AndroidBitmapInfo  infoedges;
+	void*              pixelsedge;
+	int                ret;
+	int             y;
+	int             x;
+	int             sumX,sumY,sum;
+	int             i,j;
+	int                Gx[3][3];
+	int                Gy[3][3];
+	uint8_t            *graydata;
+	uint8_t            *edgedata;
+
+	//LOGI("findEdges running");
+
+	Gx[0][0] = -1;Gx[0][1] = 0;Gx[0][2] = 1;
+	Gx[1][0] = -2;Gx[1][1] = 0;Gx[1][2] = 2;
+	Gx[2][0] = -1;Gx[2][1] = 0;Gx[2][2] = 1;
+
+	Gy[0][0] = 1;Gy[0][1] = 2;Gy[0][2] = 1;
+	Gy[1][0] = 0;Gy[1][1] = 0;Gy[1][2] = 0;
+	Gy[2][0] = -1;Gy[2][1] = -2;Gy[2][2] = -1;
+
+
+	if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_getInfo(env, bitmapedges, &infoedges)) < 0) {
+		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapedges, &pixelsedge)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	// modify pixels with image processing algorithm
+	//LOGI("time to modify pixels....");
+
+	graydata = (uint8_t *) pixelsgray;
+	edgedata = (uint8_t *) pixelsedge;
+
+	for (y=0;y<=infogray.height - 1;y++) {
+		for (x=0;x<infogray.width -1;x++) {
+			sumX = 0;
+			sumY = 0;
+			// check boundaries
+			if (y==0 || y == infogray.height-1) {
+				sum = 0;
+			} else if (x == 0 || x == infogray.width -1) {
+				sum = 0;
+			} else {
+				// calc X gradient
+				for (i=-1;i<=1;i++) {
+					for (j=-1;j<=1;j++) {
+						sumX += (int) ( (*(graydata + x + i + (y + j)
+								* infogray.stride)) * Gx[i+1][j+1]);
+					}
+				}
+
+				// calc Y gradient
+				for (i=-1;i<=1;i++) {
+					for (j=-1;j<=1;j++) {
+						sumY += (int) ( (*(graydata + x + i + (y + j)
+								* infogray.stride)) * Gy[i+1][j+1]);
+					}
+				}
+				sum = abs(sumX) + abs(sumY);
+			}
+			if (sum>255) sum = 255;
+			if (sum<0) sum = 0;
+
+			*(edgedata + x + y*infogray.width) = 255 - (uint8_t) sum;
+		}
+	}
+	AndroidBitmap_unlockPixels(env, bitmapgray);
+	AndroidBitmap_unlockPixels(env, bitmapedges);
+}
+
+
+void Java_com_camera_simplewebcam_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapshow){
+	AndroidBitmapInfo  infoedge;
+	void*              pixelsedge;
+	AndroidBitmapInfo  infoshow;
+	void*              pixelsshow;
+	int                ret;
+	int 			y;
+	int             x;
+	uint8_t			*edgeline;
+	argb			*showline;
+
+	//LOGI("showBmp");
+	if ((ret = AndroidBitmap_getInfo(env, bitmapedge, &infoedge)) < 0)  {
+		LOGE("AndroidBitmap_getInfo() failed 1 ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_getInfo(env, bitmapshow, &infoshow)) < 0)  {
+		LOGE("AndroidBitmap_getInfo() failed 2 ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapedge, &pixelsedge)) < 0)
+	{
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapshow, &pixelsshow)) < 0)
+	{
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+
+	for(y = 0; y < infoedge.height; y++)
+	{
+		edgeline = (uint8_t *)pixelsedge;
+		showline = (argb *)pixelsshow;
+		for(x = 0; x < infoedge.width; x++)
+		{
+			showline[x].alpha = edgeline[x];
+			showline[x].red = edgeline[x];
+			showline[x].green = edgeline[x];
+			showline[x].blue = edgeline[x];
+			//LOGI("color image :: alpha is %d, red is %d, green is %d, blue is %d", showline[x].alpha, showline[x].red, showline[x].green, showline[x].blue);
+
+		}
+		pixelsedge = (char *)pixelsedge + infoedge.stride;
+		pixelsshow = (char *) pixelsshow + infoshow.stride;
+	}
+
+	//LOGI("unlocking pixels");
+	AndroidBitmap_unlockPixels(env, bitmapshow);
+	AndroidBitmap_unlockPixels(env, bitmapedge);
 
 }
-void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor){
 
-	    AndroidBitmapInfo  infocolor;
-	    void*              pixelscolor;
-	    int                ret;
-	    int             y;
-	    int             x;
 
-	    //LOGI("convertToGray");
-	    if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
-	        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-	        return;
-	    }
 
-	    //LOGI("color image :: width is %d; height is %d; stride is %d; format is %d;flags is %d",infocolor.width,infocolor.height,infocolor.stride,infocolor.format,infocolor.flags);
-	    if (infocolor.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-	        LOGE("Bitmap format is not RGBA_8888 !");
-	        return;
-	    }
-
-	    if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
-	        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	    }
-
-	   // modify pixels with image processing algorithm
-
-	    for (y=0;y<infocolor.height;y++) {
-	        argb * line = (argb *) pixelscolor;
-	        for (x=0;x<infocolor.width;x++) {
-	        	int val = 0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue;
-	        	line[x].red = val;
-	        	line[x].green = val;
-	        	line[x].blue = val;
-	        }
-
-	        pixelscolor = (char *)pixelscolor + infocolor.stride;
-	    }
-
-	    //LOGI("unlocking pixels");
-	    AndroidBitmap_unlockPixels(env, bitmapcolor);
-
-}
 

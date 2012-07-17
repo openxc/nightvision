@@ -98,4 +98,7 @@ jint Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* e
 void Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz);
 void Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap);                                                  
-void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor);
+void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray);
+void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapedges);
+void Java_com_camera_simplewebcam_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapout);
+
