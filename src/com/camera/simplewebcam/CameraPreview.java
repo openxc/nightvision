@@ -6,6 +6,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 
 class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runnable {
@@ -51,7 +52,6 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
     public native void showBitmap(Bitmap bitmapedges, Bitmap bitmapout);
     static {
-        System.loadLibrary("opencv_java");
         System.loadLibrary("ImageProc");
        
     }
@@ -101,7 +101,9 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
             if (canvas != null)
             {
             	// draw camera bmp on canvas
-            	canvas.drawBitmap(bmp,null,rect,null);
+                canvas.drawColor(Color.BLACK);
+                canvas.drawBitmap(bmp,null,rect,null);
+
             	getHolder().unlockCanvasAndPost(canvas);
 
             }
@@ -143,7 +145,10 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		if(DEBUG) Log.d("WebCam", "surfaceDestroyed");
-		if(cameraExists){
+		bmp.recycle();
+		bmpedges.recycle();
+		bmpgray.recycle();
+			if(cameraExists){
 			shouldStop = true;
 			while(shouldStop){
 				try{ 

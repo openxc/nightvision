@@ -25,9 +25,6 @@
 #include <linux/videodev2.h>
 #include <linux/usbdevice_fs.h>
 
-#include "cv.h"
-#include "highgui.h"
-
 #define  LOG_TAG    "TEST"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
