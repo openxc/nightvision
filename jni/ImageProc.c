@@ -1,6 +1,5 @@
 #include "ImageProc.h"
 
-
 #include <android/log.h>
 #include <android/bitmap.h>
 
