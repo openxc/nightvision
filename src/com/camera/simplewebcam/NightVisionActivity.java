@@ -13,9 +13,9 @@ import android.os.Vibrator;
 import android.util.Log;
 
 
-public class Main extends Activity {
-    private static final String TAG = "Main: Camera";
-    static boolean activityRunning;
+public class NightVisionActivity extends Activity {
+    private static final String TAG = "NightVisionActivity";
+    private static boolean activityRunning;
     CameraPreview cp;
 
     @Override
@@ -27,7 +27,7 @@ public class Main extends Activity {
         cp = new CameraPreview(this);
         setContentView(cp);
 
-        Intent MonitoringServiceIntent = new Intent(Main.this, VehicleMonitoringService.class);
+        Intent MonitoringServiceIntent = new Intent(NightVisionActivity.this, VehicleMonitoringService.class);
         startService(MonitoringServiceIntent);  
         Log.w(TAG, "Starting Service from BootupReceiver");
 
@@ -37,8 +37,10 @@ public class Main extends Activity {
 
         IntentFilter usbfilter = new IntentFilter();
         usbfilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        usbfilter.addAction("com.ford.openxc.NO_CAMERA_DETECTED");
         registerReceiver(mUsbReceiver, usbfilter);
     }
+
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -46,6 +48,7 @@ public class Main extends Activity {
             finish();
         }
     };
+
 
     BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
@@ -60,6 +63,7 @@ public class Main extends Activity {
         super.finish();
     }
 
+
     @Override
     public void onPause() {   
         super.onPause();
@@ -67,26 +71,32 @@ public class Main extends Activity {
         android.os.Process.killProcess(android.os.Process.myPid()); 
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
         activityRunning = true;
     }
 
+
     public void usbError(){
         Vibrator vibrator = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(2000);
 
         new AlertDialog.Builder(this)
-        .setTitle("USB Camera Unplugged!")
-        .setMessage("App is closing. Please reopen from main menu.")
+        .setTitle("USB Device Unplugged!")
+        .setMessage("Ford Night Vision is closing. Please insert a USB web camera.")
         .setCancelable(false)
         .setNeutralButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Main.this.finish();
+                activityRunning = false;
+                android.os.Process.killProcess(android.os.Process.myPid()); 
             }
         }).show();
-
     }
 
+
+    public static boolean isRunning(){
+        return activityRunning;
+    }
 }

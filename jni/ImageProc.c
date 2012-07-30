@@ -9,7 +9,6 @@ int errnoexit(const char *s)
 	return ERROR_LOCAL;
 }
 
-
 int xioctl(int fd, int request, void *arg)
 {
 	int r;
@@ -19,6 +18,7 @@ int xioctl(int fd, int request, void *arg)
 
 	return r;
 }
+
 int checkCamerabase(void){
 	struct stat st;
 	int i;
