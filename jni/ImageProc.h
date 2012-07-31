@@ -90,12 +90,12 @@ int closedevice(void);
 
 void yuyv422toABGRY(unsigned char *src);
 
-jint Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject thiz, jint videoid);
-jint Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase);
-void Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,jobject thiz);
-void Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz);
-void Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap);                                                  
-void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray);
-void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapedges);
-void Java_com_camera_simplewebcam_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapout);
+jint Java_com_camera_nightvision_CameraPreview_prepareCamera( JNIEnv* env,jobject thiz, jint videoid);
+jint Java_com_camera_nightvision_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase);
+void Java_com_camera_nightvision_CameraPreview_processCamera( JNIEnv* env,jobject thiz);
+void Java_com_camera_nightvision_CameraPreview_stopCamera(JNIEnv* env,jobject thiz);
+void Java_com_camera_nightvision_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap);
+void Java_com_camera_nightvision_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray);
+void Java_com_camera_nightvision_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapedges);
+void Java_com_camera_nightvision_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapout);
 

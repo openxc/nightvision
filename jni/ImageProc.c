@@ -406,7 +406,7 @@ void yuyv422toABGRY(unsigned char *src)
 }
 
 void 
-Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap){
+Java_com_camera_nightvision_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,jobject bitmap){
 
 	AndroidBitmapInfo  info;
 	void*              pixels;
@@ -449,7 +449,7 @@ Java_com_camera_simplewebcam_CameraPreview_pixeltobmp( JNIEnv* env,jobject thiz,
 }
 
 jint 
-Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject thiz, jint videoid){
+Java_com_camera_nightvision_CameraPreview_prepareCamera( JNIEnv* env,jobject thiz, jint videoid){
 
 	int ret;
 
@@ -484,25 +484,25 @@ Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject th
 
 
 jint 
-Java_com_camera_simplewebcam_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase){
+Java_com_camera_nightvision_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase){
 
 	int ret;
 
 	camerabase = videobase;
 
-	return Java_com_camera_simplewebcam_CameraPreview_prepareCamera(env,thiz,videoid);
+	return Java_com_camera_nightvision_CameraPreview_prepareCamera(env,thiz,videoid);
 
 }
 
 void 
-Java_com_camera_simplewebcam_CameraPreview_processCamera( JNIEnv* env,
+Java_com_camera_nightvision_CameraPreview_processCamera( JNIEnv* env,
 		jobject thiz){
 
 	readframeonce();
 }
 
 void 
-Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
+Java_com_camera_nightvision_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 
 	stopcapturing ();
 
@@ -516,15 +516,14 @@ Java_com_camera_simplewebcam_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 	fd = -1;
 }
 
-void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray){
-	AndroidBitmapInfo  infocolor;
-	void*              pixelscolor;
-	AndroidBitmapInfo  infogray;
-	void*              pixelsgray;
-	int                ret;
-	int             y;
-	int             x;
-
+void Java_com_camera_nightvision_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray){
+	AndroidBitmapInfo	infocolor;
+	void*             	pixelscolor;
+	AndroidBitmapInfo 	infogray;
+	void*             	pixelsgray;
+	int              	ret;
+	int     	        y;
+	int      	        x;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
 		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -536,13 +535,11 @@ void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject
 		return;
 	}
 
-	if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0)
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
-	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0)
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
 	// modify pixels with image processing algorithm
 	for (y=0;y<infocolor.height;y++) {
@@ -561,21 +558,21 @@ void Java_com_camera_simplewebcam_CameraPreview_toGrayscale( JNIEnv* env,jobject
 
 }
 
-void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapgray, jobject bitmapedges){
+void Java_com_camera_nightvision_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapgray, jobject bitmapedges){
 
-	AndroidBitmapInfo  infogray;
-	void*              pixelsgray;
-	AndroidBitmapInfo  infoedges;
-	void*              pixelsedge;
-	int                ret;
-	int             y;
-	int             x;
-	int             sumX,sumY,sum;
-	int             i,j;
-	int                Gx[3][3];
-	int                Gy[3][3];
-	uint8_t            *graydata;
-	uint8_t            *edgedata;
+	AndroidBitmapInfo 	infogray;
+	void*             	pixelsgray;
+	AndroidBitmapInfo	infoedges;
+	void*             	pixelsedge;
+	int               	ret;
+	int          	 	y;
+	int         	    x;
+	int         	    sumX,sumY,sum;
+	int          	   	i,j;
+	int                	Gx[3][3];
+	int                	Gy[3][3];
+	uint8_t            	*graydata;
+	uint8_t            	*edgedata;
 
 	Gx[0][0] = -1;Gx[0][1] = 0;Gx[0][2] = 1;
 	Gx[1][0] = -2;Gx[1][1] = 0;Gx[1][2] = 2;
@@ -584,7 +581,6 @@ void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject
 	Gy[0][0] = 1;Gy[0][1] = 2;Gy[0][2] = 1;
 	Gy[1][0] = 0;Gy[1][1] = 0;Gy[1][2] = 0;
 	Gy[2][0] = -1;Gy[2][1] = -2;Gy[2][2] = -1;
-
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
 		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -596,13 +592,11 @@ void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject
 		return;
 	}
 
-	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0)
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
-	if ((ret = AndroidBitmap_lockPixels(env, bitmapedges, &pixelsedge)) < 0) {
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapedges, &pixelsedge)) < 0)
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
 	// modify pixels with image processing algorithm
 	graydata = (uint8_t *) pixelsgray;
@@ -612,12 +606,11 @@ void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject
 		for (x=0;x<infogray.width -1;x++) {
 			sumX = 0;
 			sumY = 0;
+
 			// check boundaries
-			if (y==0 || y == infogray.height-1) {
-				sum = 0;
-			} else if (x == 0 || x == infogray.width -1) {
-				sum = 0;
-			} else {
+			if (y==0 || y == infogray.height-1) sum = 0;
+			else if (x == 0 || x == infogray.width -1) sum = 0;
+			else {
 				// calc X gradient
 				for (i=-1;i<=1;i++) {
 					for (j=-1;j<=1;j++) {
@@ -633,29 +626,31 @@ void Java_com_camera_simplewebcam_CameraPreview_detectEdges( JNIEnv* env,jobject
 								* infogray.stride)) * Gy[i+1][j+1]);
 					}
 				}
+
 				sum = abs(sumX) + abs(sumY);
 			}
-			if (sum>255) sum = 255;
-			if (sum<0) sum = 0;
 
+			if (sum>200) sum = 255;
+			if (sum<50) sum = 0;
 			*(edgedata + x + y*infogray.width) = 0+ (uint8_t) sum;
 		}
 	}
+
 	AndroidBitmap_unlockPixels(env, bitmapgray);
 	AndroidBitmap_unlockPixels(env, bitmapedges);
 }
 
 
-void Java_com_camera_simplewebcam_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapshow){
-	AndroidBitmapInfo  infoedge;
-	void*              pixelsedge;
-	AndroidBitmapInfo  infoshow;
-	void*              pixelsshow;
-	int                ret;
-	int 			y;
-	int             x;
-	uint8_t			*edgeline;
-	argb			*showline;
+void Java_com_camera_nightvision_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapshow){
+	AndroidBitmapInfo  	infoedge;
+	void*              	pixelsedge;
+	AndroidBitmapInfo  	infoshow;
+	void*              	pixelsshow;
+	int                	ret;
+	int					y;
+	int            		x;
+	uint8_t				*edgeline;
+	argb				*showline;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapedge, &infoedge)) < 0)  {
 		LOGE("AndroidBitmap_getInfo() failed 1 ! error=%d", ret);
@@ -668,28 +663,22 @@ void Java_com_camera_simplewebcam_CameraPreview_showBitmap( JNIEnv* env,jobject 
 	}
 
 	if ((ret = AndroidBitmap_lockPixels(env, bitmapedge, &pixelsedge)) < 0)
-	{
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
 	if ((ret = AndroidBitmap_lockPixels(env, bitmapshow, &pixelsshow)) < 0)
-	{
 		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
 
-
-	for(y = 0; y < infoedge.height; y++)
-	{
+	for(y = 0; y < infoedge.height; y++) {
 		edgeline = (uint8_t *)pixelsedge;
 		showline = (argb *)pixelsshow;
-		for(x = 0; x < infoedge.width; x++)
-		{
+
+		for(x = 0; x < infoedge.width; x++) {
 			showline[x].alpha = edgeline[x];
 			showline[x].red = edgeline[x];
 			showline[x].green = edgeline[x];
 			showline[x].blue = edgeline[x];
-
 		}
+
 		pixelsedge = (char *)pixelsedge + infoedge.stride;
 		pixelsshow = (char *) pixelsshow + infoshow.stride;
 	}

@@ -1,4 +1,4 @@
-package com.camera.simplewebcam;
+package com.camera.nightvision;
 
 import android.content.Context;
 import android.content.Intent;

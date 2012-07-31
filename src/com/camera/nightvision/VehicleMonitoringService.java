@@ -1,4 +1,4 @@
-package com.camera.simplewebcam;
+package com.camera.nightvision;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -42,8 +42,8 @@ public class VehicleMonitoringService extends Service {
                         Log.i(TAG, "Activity Launched");
                     }
                     else if (!HeadlampStatusBool){
-                        Intent unreversedIntent = new Intent(ACTION_VEHICLE_HEADLAMPS_OFF);
-                        sendBroadcast(unreversedIntent);
+                        Intent headlampsOffIntent = new Intent(ACTION_VEHICLE_HEADLAMPS_OFF);
+                        sendBroadcast(headlampsOffIntent);
                         Log.i(TAG, "Vehicle HEADLAMPS OFF Broadcast Intent Sent");
                     }
                 }
@@ -60,6 +60,7 @@ public class VehicleMonitoringService extends Service {
             try {
                 mVehicleManager.addListener(HeadlampStatus.class,
                         mHeadlampStatus);
+                Log.i(TAG, "mVehicleManager listener added");
             } catch(VehicleServiceException e) {
                 Log.w(TAG, "Couldn't add listeners for measurements", e);
             } catch(UnrecognizedMeasurementTypeException e) {

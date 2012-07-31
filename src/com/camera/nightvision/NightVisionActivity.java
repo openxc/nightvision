@@ -1,4 +1,4 @@
-package com.camera.simplewebcam;
+package com.camera.nightvision;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,7 +21,6 @@ public class NightVisionActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.main);
         activityRunning = true;
         cp = new CameraPreview(this);
@@ -29,7 +28,7 @@ public class NightVisionActivity extends Activity {
 
         Intent MonitoringServiceIntent = new Intent(NightVisionActivity.this, VehicleMonitoringService.class);
         startService(MonitoringServiceIntent);  
-        Log.w(TAG, "Starting Service from BootupReceiver");
+        Log.w(TAG, "Starting Service from NightVisionActivity");
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.ford.openxc.HEADLAMPS_OFF");
@@ -76,6 +75,7 @@ public class NightVisionActivity extends Activity {
     public void onResume() {
         super.onResume();
         activityRunning = true;
+        
     }
 
 
