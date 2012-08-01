@@ -21,6 +21,7 @@ public class NightVisionActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         setContentView(R.layout.main);
         activityRunning = true;
         cp = new CameraPreview(this);
@@ -30,18 +31,12 @@ public class NightVisionActivity extends Activity {
         startService(MonitoringServiceIntent);  
         Log.w(TAG, "Starting Service from NightVisionActivity");
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.ford.openxc.HEADLAMPS_OFF");
-        registerReceiver(receiver, filter);
-
-        IntentFilter usbfilter = new IntentFilter();
-        usbfilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        usbfilter.addAction("com.ford.openxc.NO_CAMERA_DETECTED");
-        registerReceiver(mUsbReceiver, usbfilter);
+        registerCloseReceiver();
+        registerUsbReceiver();
     }
 
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
+    BroadcastReceiver closeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             finish();
@@ -49,7 +44,7 @@ public class NightVisionActivity extends Activity {
     };
 
 
-    BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+    BroadcastReceiver usbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.w("USB ERROR", "Usb device detached");
@@ -60,6 +55,7 @@ public class NightVisionActivity extends Activity {
 
     public void finish() {
         super.finish();
+        activityRunning =false;
     }
 
 
@@ -67,7 +63,6 @@ public class NightVisionActivity extends Activity {
     public void onPause() {   
         super.onPause();
         activityRunning = false;
-        android.os.Process.killProcess(android.os.Process.myPid()); 
     }
 
 
@@ -75,11 +70,12 @@ public class NightVisionActivity extends Activity {
     public void onResume() {
         super.onResume();
         activityRunning = true;
-        
+        registerCloseReceiver();
+        registerUsbReceiver();
     }
 
 
-    public void usbError(){
+    public void usbError() {
         Vibrator vibrator = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(2000);
 
@@ -95,8 +91,33 @@ public class NightVisionActivity extends Activity {
         }).show();
     }
 
+    
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
-    public static boolean isRunning(){
+        activityRunning = false;
+        unregisterReceiver(usbReceiver);
+        unregisterReceiver(closeReceiver);
+    }
+
+    
+    public static boolean isRunning() {
         return activityRunning;
+    }
+
+    
+    public void registerCloseReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.ford.openxc.HEADLAMPS_OFF");
+        registerReceiver(closeReceiver, filter);
+    }
+
+    
+    public void registerUsbReceiver() {
+        IntentFilter usbfilter = new IntentFilter();
+        usbfilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        usbfilter.addAction("com.ford.openxc.NO_CAMERA_DETECTED");
+        registerReceiver(usbReceiver, usbfilter);
     }
 }
