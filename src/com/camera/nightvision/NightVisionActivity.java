@@ -11,17 +11,23 @@ import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 
 public class NightVisionActivity extends Activity {
     private static final String TAG = "NightVisionActivity";
     private static boolean activityRunning;
+    private static boolean audioOption=true;
+    private static boolean videoOption =true;
+    private static boolean objectDetectionOption=true;
     CameraPreview cp;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.main);
         activityRunning = true;
         cp = new CameraPreview(this);
@@ -102,10 +108,61 @@ public class NightVisionActivity extends Activity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         activityRunning = false;
         unregisterReceiver(usbReceiver);
         unregisterReceiver(closeReceiver);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_settings, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {   
+        switch (item.getItemId()) {
+
+        case R.id.audioAlertOption:
+            if (item.isChecked()) {
+                item.setChecked(false);
+                audioOption = false;
+            }
+            else {
+                item.setChecked(true);
+                audioOption = true;
+            }
+            return true;
+
+        case R.id.videoFilterOption:
+            if (item.isChecked()) {
+                item.setChecked(false);
+                videoOption = false;
+            }
+            else {
+                item.setChecked(true);
+                videoOption = true;
+            }
+            return true;
+
+        case R.id.objectDetectionOption:
+            if (item.isChecked()) {
+                item.setChecked(false);
+                objectDetectionOption = false;
+            }
+            else {
+                item.setChecked(true);
+                objectDetectionOption = true;
+            }
+            return true;
+
+        default:
+            return super.onOptionsItemSelected(item);
+        }
     }
 
 
@@ -114,6 +171,21 @@ public class NightVisionActivity extends Activity {
     }
 
 
+    public static boolean getAudioOption() {
+        return audioOption;
+    }
+
+
+    public static boolean getVideoOption() {
+        return videoOption;
+    }
+ 
+    
+    public static boolean getObjectDetectionOption() {
+        return objectDetectionOption;
+    }
+
+    
     public void registerCloseReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.ford.openxc.HEADLAMPS_OFF");
@@ -127,4 +199,6 @@ public class NightVisionActivity extends Activity {
         usbfilter.addAction("com.ford.openxc.NO_CAMERA_DETECTED");
         registerReceiver(usbReceiver, usbfilter);
     }
+
+
 }

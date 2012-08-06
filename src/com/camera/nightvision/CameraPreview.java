@@ -8,7 +8,9 @@ import android.view.SurfaceView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 
 class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
@@ -18,12 +20,21 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     protected Context context;
     private SurfaceHolder holder;
     Thread mainLoop = null;
-    private Bitmap bmp=null;
-    private Bitmap bmpgray=null;
-    private Bitmap bmpedges=null;
+    private Bitmap bmp = null;
+    private Bitmap bmpgray = null;
+    private Bitmap bmpedges = null;
+    private Bitmap objectOverlaybmp = null;
 
-    private boolean cameraExists=false;
-    private boolean shouldStop=false;
+    private boolean everyOtherFrame = true;
+    private boolean objectDetected = false;
+    private boolean objectInPrevFrame = false;
+    private int xStartBound = (int) (IMG_WIDTH *.25);
+    private int yStartBound = (int) (IMG_HEIGHT *.25);
+    private int xEndBound = (int) (IMG_WIDTH *.75);
+    private int yEndBound = (int) (IMG_HEIGHT *.75);
+
+    private boolean cameraExists = false;
+    private boolean shouldStop = false;
 
     // /dev/videox (x=cameraId+cameraBase) is used.
     // In some omap devices, system uses /dev/video[0-3],
@@ -34,8 +45,8 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 
     // This definition also exists in ImageProc.h.
     // Webcam must support the resolution 640x480 with YUYV format. 
-    static final int IMG_WIDTH=640;
-    static final int IMG_HEIGHT=480;
+    static final int IMG_WIDTH=320;
+    static final int IMG_HEIGHT=240;
 
     // The following variables are used to draw camera images.
     private int winWidth=0;
@@ -70,20 +81,21 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 
     @Override
     public void run() {
-        if(cameraExists){
+        if(cameraExists) {
+            MediaPlayer mp = MediaPlayer.create(this.context, R.raw.alert);  
             while (true && cameraExists) {
-                //obtaining display area to draw a large image
-                if(winWidth==0){
+
+                if(winWidth==0) {
                     winWidth=this.getWidth();
                     winHeight=this.getHeight();
 
-                    if(winWidth*3/4<=winHeight){
+                    if(winWidth*3/4<=winHeight) {
                         dw = 0;
                         dh = (winHeight-winWidth*3/4)/2;
                         rate = ((float)winWidth)/IMG_WIDTH;
                         rect = new Rect(dw,dh,dw+winWidth-1,dh+winWidth*3/4-1);
                     }
-                    else{
+                    else {
                         dw = (winWidth-winHeight*4/3)/2;
                         dh = 0;
                         rate = ((float)winHeight)/IMG_HEIGHT;
@@ -91,26 +103,50 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
                     }
                 }
 
-
                 processCamera();
                 pixeltobmp(bmp);
                 toGrayscale(bmp, bmpgray);
                 detectEdges(bmpgray, bmpedges);
                 showBitmap(bmpedges, bmp);
 
+                Paint overlayPaint = new Paint();
+                overlayPaint.setAlpha(0);
+
+                if(NightVisionActivity.getAudioOption()) {
+                    if (!objectInPrevFrame && objectDetected) {
+                        mp.start();
+                        objectInPrevFrame = true;
+                    }
+                    else if (objectInPrevFrame && !objectDetected) objectInPrevFrame = false;
+                }
+
+                if (NightVisionActivity.getObjectDetectionOption()) {
+                    overlayPaint.setAlpha(130);
+                    if (everyOtherFrame == true) {
+                        everyOtherFrame = false;
+                        objectDetect();
+                    }
+                    else everyOtherFrame = true;   
+                }
+
+                if (!NightVisionActivity.getVideoOption()) showBitmap(bmpgray, bmp);
+
                 Canvas canvas = getHolder().lockCanvas();
                 if (canvas != null) {
                     canvas.drawColor(Color.BLACK);
                     canvas.drawBitmap(bmp,null,rect,null);
+                    canvas.drawBitmap(objectOverlaybmp, null, rect, overlayPaint);
                     getHolder().unlockCanvasAndPost(canvas);
                 }
 
-                if(shouldStop){
+                if(shouldStop) {
                     shouldStop = false;  
                     break;
                 }	        
             }
+            mp.release();
         }
+
         else {      
             Intent noCameraDetectedIntent = new Intent(NO_CAMERA_DETECTED);
             context.sendBroadcast(noCameraDetectedIntent);
@@ -121,19 +157,17 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if(DEBUG) Log.d(TAG, "surfaceCreated");
-        if(bmp==null){
-            bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
-        }
-        if(bmpgray==null){
-            bmpgray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
-        }
-        if(bmpedges==null){
-            bmpedges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
-        }
+
+        if(bmp==null) bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
+
+        if(objectOverlaybmp==null) objectOverlaybmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
+
+        if(bmpgray==null) bmpgray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
+
+        if(bmpedges==null) bmpedges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
 
         // /dev/videox (x=cameraId + cameraBase) is used
         int ret = prepareCameraWithBase(cameraId, cameraBase);
-
         if(ret!=-1) cameraExists = true;
 
         mainLoop = new Thread(this);
@@ -148,17 +182,43 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         if(DEBUG) Log.d(TAG, "surfaceDestroyed");
-        bmp.recycle();
-        bmpedges.recycle();
-        bmpgray.recycle();
-        if(cameraExists){
+        if(cameraExists) {
             shouldStop = true;
-            while(shouldStop){
-                try{ 
+            while(shouldStop) {
+                try { 
                     Thread.sleep(100); // wait for thread stopping
-                }catch(Exception e){}
+                } catch(Exception e){}
             }
         }
         stopCamera();
     }   
+
+    public void objectDetect() {
+        int x, y, i, j, sum;
+        int xBound = 12;
+        int yBound = 12;
+        int[] overlaySection = new int [xBound * yBound];
+        objectOverlaybmp.eraseColor(Color.TRANSPARENT);
+        objectDetected = false;
+
+        for (y=(int) (IMG_HEIGHT*.25); y < IMG_HEIGHT*.75; y+=(yBound/2)) {
+            for (x=(int) (IMG_WIDTH*.25); x < IMG_WIDTH*.75; x+=(xBound/2)) {
+                sum =0;
+                for (i=0; i < xBound; i++) {
+                    for (j=0 ;j < yBound; j++) {
+                        if (bmp.getPixel((x+i),(y+j)) == Color.WHITE) {
+                            sum++;
+                            overlaySection[i+ (j*(yBound))] = -256;
+                        }
+                    }
+                }
+
+                if (sum > (yBound*xBound*.4)) {
+                    objectOverlaybmp.setPixels(overlaySection, 0, xBound, x, y, xBound, yBound);
+                    objectDetected = true;
+                }
+
+            }
+        }
+    }
 }

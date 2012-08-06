@@ -31,8 +31,8 @@
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
-#define IMG_WIDTH 640
-#define IMG_HEIGHT 480
+#define IMG_WIDTH 320
+#define IMG_HEIGHT 240
 
 #define ERROR_LOCAL -1
 #define SUCCESS_LOCAL 0
