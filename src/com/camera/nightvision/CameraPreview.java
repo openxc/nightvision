@@ -68,6 +68,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         System.loadLibrary("ImageProc");
     }
 
+    
     CameraPreview(Context context) {
         super(context);
         this.context = context;
@@ -79,6 +80,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         holder.setType(SurfaceHolder.SURFACE_TYPE_NORMAL);	
     }
 
+    
     @Override
     public void run() {
         if(cameraExists) {
@@ -154,6 +156,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         }
     }
 
+    
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if(DEBUG) Log.d(TAG, "surfaceCreated");
@@ -174,11 +177,17 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         mainLoop.start();		
     }
 
+    
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if(DEBUG) Log.d(TAG, "surfaceChanged");
     }
 
+    
+    /**
+     * A known memory leak exists when the surface is destroyed because 
+     * bitmap.recycle() is never called on all of the bitmaps used in the class.
+     */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         if(DEBUG) Log.d(TAG, "surfaceDestroyed");
@@ -192,11 +201,21 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
         }
         stopCamera();
     }   
-
+    
+    
+    /** Simple Object Detection 
+     * 
+     * This object detection limits the detection to a bounded area of interest
+     * that is the middle 50% of the screen. It then iterates through the bounded
+     * area looking at a smaller area of xBound*yBound. If that area contains more 
+     * than 40% white pixels (edges) then the area is considered part of an object
+     * and it is marked so in the objectOverlaybmp.
+     *  
+     * */
     public void objectDetect() {
         int x, y, i, j, sum;
-        int xBound = 12;
-        int yBound = 12;
+        int xBound = 8;
+        int yBound = 8;
         int[] overlaySection = new int [xBound * yBound];
         objectOverlaybmp.eraseColor(Color.TRANSPARENT);
         objectDetected = false;

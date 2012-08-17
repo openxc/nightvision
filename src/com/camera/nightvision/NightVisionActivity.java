@@ -179,13 +179,13 @@ public class NightVisionActivity extends Activity {
     public static boolean getVideoOption() {
         return videoOption;
     }
- 
-    
+
+
     public static boolean getObjectDetectionOption() {
         return objectDetectionOption;
     }
 
-    
+
     public void registerCloseReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.ford.openxc.HEADLAMPS_OFF");

@@ -482,7 +482,6 @@ Java_com_camera_nightvision_CameraPreview_prepareCamera( JNIEnv* env,jobject thi
 }	
 
 
-
 jint 
 Java_com_camera_nightvision_CameraPreview_prepareCameraWithBase( JNIEnv* env,jobject thiz, jint videoid, jint videobase){
 
@@ -494,12 +493,14 @@ Java_com_camera_nightvision_CameraPreview_prepareCameraWithBase( JNIEnv* env,job
 
 }
 
+
 void 
 Java_com_camera_nightvision_CameraPreview_processCamera( JNIEnv* env,
 		jobject thiz){
 
 	readframeonce();
 }
+
 
 void 
 Java_com_camera_nightvision_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
@@ -515,6 +516,7 @@ Java_com_camera_nightvision_CameraPreview_stopCamera(JNIEnv* env,jobject thiz){
 
 	fd = -1;
 }
+
 
 void Java_com_camera_nightvision_CameraPreview_toGrayscale( JNIEnv* env,jobject thiz,jobject bitmapcolor, jobject bitmapgray){
 	AndroidBitmapInfo	infocolor;
@@ -558,6 +560,14 @@ void Java_com_camera_nightvision_CameraPreview_toGrayscale( JNIEnv* env,jobject 
 
 }
 
+
+//This function uses a variant of the Sobel operator to detect the edges in the bitmap. It
+//calculates the gradient of the image intensity at each point.
+//The result therefore shows how "abruptly" or "smoothly" the image changes at that point,
+//and therefore how likely it is that that part of the image represents an edge, as well
+//as how that edge is likely to be oriented. The operator uses two 3×3 matrices which are
+//convolved with the original image to calculate approximations of the derivatives - one
+//for horizontal changes, and one for vertical.
 void Java_com_camera_nightvision_CameraPreview_detectEdges( JNIEnv* env,jobject thiz,jobject bitmapgray, jobject bitmapedges){
 
 	AndroidBitmapInfo 	infogray;
@@ -641,6 +651,8 @@ void Java_com_camera_nightvision_CameraPreview_detectEdges( JNIEnv* env,jobject 
 }
 
 
+//This method converts the ALPHA_8 bitmap back to the RGBA format (image is
+// grayscale) for Android to be able to show it on the canvas
 void Java_com_camera_nightvision_CameraPreview_showBitmap( JNIEnv* env,jobject thiz,jobject bitmapedge, jobject bitmapshow){
 	AndroidBitmapInfo  	infoedge;
 	void*              	pixelsedge;
