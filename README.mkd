@@ -1,15 +1,15 @@
 FORD NIGHT VISION : Android Application
 
 
-Warning:  This document assumes the user has access to an OpenXC CAN Translator.  
+Warning:  This document assumes the user has access to an OpenXC CAN Translator.
 
 
 Purpose:
-This application is meant to assist drivers in identifying potentially obstructive objects on the immediate roadway during night time driving scenarios. This application is not meant for city driving or for daylight driving stiauations. This application provides an alternative to the built in night vision camera systems offered by some manufacturers i.e. an aftermarket option.  
+This application is meant to assist drivers in identifying potentially obstructive objects on the immediate roadway during night time driving scenarios. This application is not meant for city driving or for daylight driving stiauations. This application provides an alternative to the built in night vision camera systems offered by some manufacturers i.e. an aftermarket option.
 
 
 Safety:
-Ford Night Vision System is intended to be used with an Android device that has a fixed location, preferably permanently, in the vehicle. For example, mounted on the dash. Disclaimer: Never mount anything on the dash such that the view of the driver is impeeded.  As this application serves to increase the level of safety, the device should never be mounted in such a way that safety is sacrificed.  
+Ford Night Vision System is intended to be used with an Android device that has a fixed location, preferably permanently, in the vehicle. For example, mounted on the dash. Disclaimer: Never mount anything on the dash such that the view of the driver is impeeded.  As this application serves to increase the level of safety, the device should never be mounted in such a way that safety is sacrificed.
 
 
 Hardware Needed:
@@ -19,7 +19,7 @@ Hardware Needed:
 	4) Ford Vehicle (list of supported vehicles can be found at openxcplatform.com)
 	5) USB splitter
 
-Ford Night Vision requires a connection via USB from the Android device to a CAN Translator (instructions on how to install a CAN Translator in a vehicle can be found at openxcplatform.com).  As both the webcam and the translator require a full-sized USB connection, a USB splitter is required to connect both the CAN Translator and the USB webcam to the Android device.  
+Ford Night Vision requires a connection via USB from the Android device to a CAN Translator (instructions on how to install a CAN Translator in a vehicle can be found at openxcplatform.com).  As both the webcam and the translator require a full-sized USB connection, a USB splitter is required to connect both the CAN Translator and the USB webcam to the Android device.
 
 Using a night vision camera, either a CCTV night vision camera or a webcamera with the IR filter removed, with an infrared illuminator to increase visibility does not produce any significant improvement over the results produced by an average webcam with the highbeams turned on. This is because the object detection only works on the road immediately in front of the vehicle and the IR illuminator will most likely not be powerful enough to illuminate beyond the length of the headlights.
 
@@ -27,23 +27,23 @@ Using a night vision camera, either a CCTV night vision camera or a webcamera wi
 Installation instructions:
 	1)  Install OpenXC Enabler application on android device
 	2)  Install Ford Night Vision application on same device
-	3)  Restart tablet (optionally, manually launch application after completing steps 4-10). 
+	3)  Restart tablet (optionally, manually launch application after completing steps 4-10).
 		This must only be done once after installation.
 	4)  Mount android device in vehicle
-	5)  Mount USB webcam on dashboard or windshield 
+	5)  Mount USB webcam on dashboard or windshield
 		(we recommend using velcro and attaching the device on the windshield behind the rearview mirror)
 	6)  Insert USB camera cable into splitter
-	7)  Connect CAN Translator to OBD-II port (if not already done)  
+	7)  Connect CAN Translator to OBD-II port (if not already done)
 	8)  Connect a USB cable, from the CAN Translator to the splitter (more detailed instructions at openxcplatform.com).
 		The full sized end should be in the splitter, micro end in the translator.
 	9) Insert splitter into android device.
 
-Ford Night Vision is now ready to be used.  
+Ford Night Vision is now ready to be used.
 
 
-Functionality/use:  
-Through the use of the CAN Translator, Ford Night Vision continually reads real-time vehicle data.  The app monitors the vehicle's headlamp status to activate the app when the headlamps are turned on and deactivate the app when the headlamps are turned off.      
-The Ford Night Vision app offers three system settings that the user can change to customize the app: 
+Functionality/use:
+Through the use of the CAN Translator, Ford Night Vision continually reads real-time vehicle data.  The app monitors the vehicle's headlamp status to activate the app when the headlamps are turned on and deactivate the app when the headlamps are turned off.
+The Ford Night Vision app offers three system settings that the user can change to customize the app:
 
 Enable Sound Alerts: enable/disable an audible alert when an object is detected on the road in the vehicle path.
 Enable Filtered Video: dispaly the video in a grayscale format or as black with white edges for increased clarity.
@@ -51,9 +51,9 @@ Highlight Objects in Path: enable/disable a yellow highlight over top of objects
 
 
 Relaunching FordBackupCam:
-With safety as a top priority, the application is designed to close itself and display a warning message/vibration if one of the USB devices is unplugged so that the user is warned that the app is no longer running. 
-    
-Currently, the app must be relaunched manually the first time after a disconnect in order to restart the VehicleMonitoringService (see below). It is recommended that you check the enabler or VehicleDashboard in order to ensure that messages are flowing from the CAN Translator.  
+With safety as a top priority, the application is designed to close itself and display a warning message/vibration if one of the USB devices is unplugged so that the user is warned that the app is no longer running.
+
+Currently, the app must be relaunched manually the first time after a disconnect in order to restart the VehicleMonitoringService (see below). It is recommended that you check the enabler or VehicleDashboard in order to ensure that messages are flowing from the CAN Translator.
 
 
 Code intricacies:
@@ -64,63 +64,63 @@ The android project contains four main classes:
 	4) VehicleMonitoringService
 
   1)  BackupCameraActivity
-	-This is the main activity.  
+	-This is the main activity.
 	-When created, it starts the VehicleMonitoringService.
-	-It contains two receivers:  
+	-It contains two receivers:
 		1) receiver that listens for a USB device being detached.  When this intent is received, it builds
 			a dialog that informs the user of what has happened, and forces them to close the activity.
 		2) receiver that listens for a closing intent from the VehicleMonitoringService.  When this intent
-			is received, the app closes by calling is finish() method.   
-				     
+			is received, the app closes by calling is finish() method.
+
 	-Includes the method isRunning(), which monitors whether the activity is active or not. This method is accessed by the
 	VehicleMonitoringService to determine if the activity needs to be launched/closed (see VehicleMonitoringService, #4).
 
   2)  BootupReceiver
 	-This is a receiver whose purpose is to listen for an intent sent by the Android system that the device has been booted.
-	When received, the receiver launches the VehicleMonitoringService.  The purpose of this is that it gives the app the 
-	ability to monitor the status of the headlamps without the need for the application to be manually launched.  
+	When received, the receiver launches the VehicleMonitoringService.  The purpose of this is that it gives the app the
+	ability to monitor the status of the headlamps without the need for the application to be manually launched.
 	The user can simply turn the tablet on and it's ready to go.
 
    3) CameraPreview
-	-This is the view to which the screen is set.  
-        -Every frame displayed on the screen is created as a bitmap in this view.  
-        -The native code in ImageProc.c grabs the camera device, processes frames and then passes them to CameraPreview as bitmaps.  
+	-This is the view to which the screen is set.
+        -Every frame displayed on the screen is created as a bitmap in this view.
+        -The native code in ImageProc.c grabs the camera device, processes frames and then passes them to CameraPreview as bitmaps.
         -CameraPreview calls native functions in ImageProc.c to process the frames of video and checks the options set by the user
 	to determine which settings are enabled and should be performed.
-	-The method objectDetect() performs a very simple object detection routine within an area of interest that is approximately 
-	the area of roadway in front of the vehicle. The method takes small, square sections of the area of interest and calcualtes 
-	the percentage of the section that is an edge. If the percentage is greater than 40% then the area is marked as an 'object' 
+	-The method objectDetect() performs a very simple object detection routine within an area of interest that is approximately
+	the area of roadway in front of the vehicle. The method takes small, square sections of the area of interest and calcualtes
+	the percentage of the section that is an edge. If the percentage is greater than 40% then the area is marked as an 'object'
 	and is added to the highlighted overlay to be displayed on top of the frame if enabled.
-	-When the surface is destroyed, the stopCamera() method is called, which can be found in the ImageProc.c jni file.  
-       
+	-When the surface is destroyed, the stopCamera() method is called, which can be found in the ImageProc.c jni file.
+
   4) VehicleMonitoringService
-	-This service is launched both on bootup by BootupReceiver (see #2) and when NightVisionActivity (see #1) is launched.  
+	-This service is launched both on bootup by BootupReceiver (see #2) and when NightVisionActivity (see #1) is launched.
 	-The purpose of this service is to bind with the VehicleManager, a service performed by the OpenXC Enabler application.  The
-	service implements one listener for the headlamp status.  
+	service implements one listener for the headlamp status.
 	-The service also monitors the status of the activity (whether is is running or not).  By monitoring both the status of the
 	headlamps and the status of the activity, the service can launch the activity appropriately.  When the service detects that
 	the headlamps have been turned on, it checks to see if the activity is running or not through the isRunning() method in
 	NightVisionActivity.  If the activity is not running, then both conditions are satisfied for it to launch the activity. In
- 	addition, if the service detects that the headlamps are turned off, it checks whether the activity is running or not through 
-	the same method.  If it is running and the headlamps are not on, it sends an intent to NightVisionActivity.  When that intent 
-	is received, NightVisionActivity calls its finish() method, which closes the application.  
+ 	addition, if the service detects that the headlamps are turned off, it checks whether the activity is running or not through
+	the same method.  If it is running and the headlamps are not on, it sends an intent to NightVisionActivity.  When that intent
+	is received, NightVisionActivity calls its finish() method, which closes the application.
 
 
 Native Functions:
 There are two native function files: ImageProc.h and ImageProc.c. These files handle the tasks of checking the camera base, opening the device, initializing the device, stopping the device, etc. The image processing functions are also contained in ImageProc.c. These functions include transforming the video frames to grayscale and then performing a variant of Sobel edge detection algoritm on the frame to highlight the edges in each bitmap. The bitmap is then transformed back to the RGBA_8888 format so that it can be displayed onto the canvas in CameraPreview.
 
 	-NOTE:  If changes are made to these files, the project must be rebuilt: simply reinstalling the application on an Android
-	device does not implement these changes. This is easiest done with installling the NDK 
-	(http://developer.android.com/tools/sdk/ndk/index.html). The app must then be uninstalled and then reinstalled onto the 
+	device does not implement these changes. This is easiest done with installling the NDK
+	(http://developer.android.com/tools/sdk/ndk/index.html). The app must then be uninstalled and then reinstalled onto the
 	Android device.
-    
-    
+
+
 Dependencies:
-	1)OpenXC library 
+	1)OpenXC library
 
 
 Requirements:
-	1) OpenXC Enabler application must also be installed on device. 
+	1) OpenXC Enabler application must also be installed on device.
 	2) USB WebCam is UVC camera, and it supports 640x480 or 320x240 resolution with YUYV format.
 	3) The kernel is V4L2 enabled, e.g.,
 
@@ -134,7 +134,11 @@ Requirements:
   	4) The permission of /dev/video0 is set 0666 in /ueventd.xxxx.rc
 
 Guaranteed supported platform : Toshiba Thrive running Android 3.2
-		     
+
 
 Last Modified:  8/6/2012
 
+## License
+
+Copyright (c) 2012-2013 Ford Motor Company
+Licensed under the BSD license.

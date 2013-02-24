@@ -16,9 +16,9 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := ImageProc
-LOCAL_SRC_FILES := ImageProc.c
+LOCAL_MODULE    := nightvision
+LOCAL_SRC_FILES := nightvision.c
 LOCAL_LDLIBS    := -llog -ljnigraphics -ldl
-
+LOCAL_CFLAGS += -std=c99
 
 include $(BUILD_SHARED_LIBRARY)

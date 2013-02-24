@@ -1,7 +1,10 @@
-/obj
-/assets
-/bin
-/gen
-/Debug
-/.settings
-/libs/
+obj
+assets
+bin
+gen
+libs
+target
+.project
+.classpath
+.DS_Store
+.settings

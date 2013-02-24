@@ -1,4 +1,4 @@
-package com.camera.nightvision;
+package com.ford.openxc.nightvision;
 
 import android.app.Service;
 import android.content.ComponentName;
