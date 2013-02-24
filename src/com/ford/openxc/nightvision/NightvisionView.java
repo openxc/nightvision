@@ -68,25 +68,19 @@ public class NightvisionView extends WebcamPreview {
                 Paint overlayPaint = new Paint();
                 overlayPaint.setAlpha(0);
 
-                if(NightVisionActivity.getAudioOption()) {
-                    if (!objectInPrevFrame && objectDetected) {
-                        mp.start();
-                        objectInPrevFrame = true;
-                    }
-                    else if (objectInPrevFrame && !objectDetected) objectInPrevFrame = false;
+                if (!objectInPrevFrame && objectDetected) {
+                    mp.start();
+                    objectInPrevFrame = true;
+                } else if (objectInPrevFrame && !objectDetected) {
+                    objectInPrevFrame = false;
                 }
 
-                if (NightVisionActivity.getObjectDetectionOption()) {
-                    overlayPaint.setAlpha(130);
-                    if (everyOtherFrame == true) {
-                        everyOtherFrame = false;
-                        objectDetect();
-                    }
-                    else everyOtherFrame = true;
-                }
-
-                if (!NightVisionActivity.getVideoOption()) {
-                    showBitmap(mBitmapGray, mBitmapVideo);
+                overlayPaint.setAlpha(130);
+                if (everyOtherFrame == true) {
+                    everyOtherFrame = false;
+                    objectDetect();
+                } else {
+                    everyOtherFrame = true;
                 }
 
                 Canvas canvas = mHolder.lockCanvas();

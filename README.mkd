@@ -85,8 +85,7 @@ The android project contains four main classes:
 	-This is the view to which the screen is set.
         -Every frame displayed on the screen is created as a bitmap in this view.
         -The native code in ImageProc.c grabs the camera device, processes frames and then passes them to CameraPreview as bitmaps.
-        -CameraPreview calls native functions in ImageProc.c to process the frames of video and checks the options set by the user
-	to determine which settings are enabled and should be performed.
+        -CameraPreview calls native functions in ImageProc.c to process the frames of video.
 	-The method objectDetect() performs a very simple object detection routine within an area of interest that is approximately
 	the area of roadway in front of the vehicle. The method takes small, square sections of the area of interest and calcualtes
 	the percentage of the section that is an edge. If the percentage is greater than 40% then the area is marked as an 'object'

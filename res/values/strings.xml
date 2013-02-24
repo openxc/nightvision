@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Night Vision</string>
-    <string name="options">Options</string>
-    <string name="audioAlertOption">Enable Sound Alerts</string>
-    <string name="videoFilterOption">Enable Filtered Video</string>
-    <string name="objectDetectionOption">Highlight Objects in Path</string>
-
 </resources>

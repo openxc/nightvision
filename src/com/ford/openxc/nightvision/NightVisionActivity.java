@@ -11,18 +11,11 @@ import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-
 
 public class NightVisionActivity extends Activity {
     private static final String TAG = "NightVisionActivity";
 
     private static boolean mRunning;
-    private static boolean mAudioOption = true;
-    private static boolean mVideoOption = true;
-    private static boolean mObjectDetectionOption = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,70 +80,8 @@ public class NightVisionActivity extends Activity {
         unregisterReceiver(closeReceiver);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_settings, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-        case R.id.audioAlertOption:
-            if (item.isChecked()) {
-                item.setChecked(false);
-                mAudioOption = false;
-            }
-            else {
-                item.setChecked(true);
-                mAudioOption = true;
-            }
-            return true;
-
-        case R.id.videoFilterOption:
-            if (item.isChecked()) {
-                item.setChecked(false);
-                mVideoOption = false;
-            }
-            else {
-                item.setChecked(true);
-                mVideoOption = true;
-            }
-            return true;
-
-        case R.id.objectDetectionOption:
-            if (item.isChecked()) {
-                item.setChecked(false);
-                mObjectDetectionOption = false;
-            }
-            else {
-                item.setChecked(true);
-                mObjectDetectionOption = true;
-            }
-            return true;
-
-        default:
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
     public static boolean isRunning() {
         return mRunning;
-    }
-
-    public static boolean getAudioOption() {
-        return mAudioOption;
-    }
-
-    public static boolean getVideoOption() {
-        return mVideoOption;
-    }
-
-    public static boolean getObjectDetectionOption() {
-        return mObjectDetectionOption;
     }
 
     BroadcastReceiver closeReceiver = new BroadcastReceiver() {
