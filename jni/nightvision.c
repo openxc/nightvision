@@ -186,56 +186,10 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
             } else if(sum < 50) {
                 sum = 0;
             }
-            *(pixelsedge + x + y * infogray.height) = (uint8_t) sum;
+            *(pixelsedge + x + y * infogray.stride) = (uint8_t) sum;
         }
     }
 
     AndroidBitmap_unlockPixels(env, bitmapgray);
     AndroidBitmap_unlockPixels(env, bitmapedges);
-}
-
-/**
- * This method converts the ALPHA_8 bitmap back to the RGBA format(image is
- * grayscale) for Android to be able to show it on the canvas
- */
-void Java_com_ford_openxc_nightvision_NightvisionView_grayscaleToRGBA(JNIEnv* env,
-        jobject thiz, jobject bitmapedge, jobject bitmapshow) {
-    int ret;
-    AndroidBitmapInfo infoedge;
-    if((ret = AndroidBitmap_getInfo(env, bitmapedge, &infoedge)) < 0)  {
-        LOGE("AndroidBitmap_getInfo() failed 1 ! error=%d", ret);
-        return;
-    }
-
-    AndroidBitmapInfo infoshow;
-    if((ret = AndroidBitmap_getInfo(env, bitmapshow, &infoshow)) < 0)  {
-        LOGE("AndroidBitmap_getInfo() failed 2 ! error=%d", ret);
-        return;
-    }
-
-    void* pixelsedge;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapedge, &pixelsedge)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-        return;
-    }
-
-    void* pixelsshow;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapshow, &pixelsshow)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-        AndroidBitmap_unlockPixels(env, bitmapedge);
-        return;
-    }
-
-    for(int y = 0; y < infoedge.height; y++) {
-        uint8_t* edgeLine = (uint8_t*) (pixelsedge + infoedge.stride * y);
-        argb* showLine = (argb*) (pixelsshow + infoshow.stride * y);
-
-        for(int x = 0; x < infoedge.width; x++) {
-            showLine[x].alpha = showLine[x].red = showLine[x].green =
-                showLine[x].blue = edgeLine[x];
-        }
-    }
-
-    AndroidBitmap_unlockPixels(env, bitmapshow);
-    AndroidBitmap_unlockPixels(env, bitmapedge);
 }

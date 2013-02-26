@@ -29,7 +29,6 @@ public class NightvisionView extends WebcamPreview {
     private MediaPlayer mMediaPlayer;
 
     public native void rgbaToGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
-    public native void grayscaleToRGBA(Bitmap bitmapedges, Bitmap bitmapout);
     public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
     public native boolean detectObjects(Bitmap bitmapedge, Bitmap bitmapoverlay);
 
