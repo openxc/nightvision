@@ -17,7 +17,6 @@ public class NightVisionActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        mRunning = true;
 
         Intent MonitoringServiceIntent = new Intent(NightVisionActivity.this,
                 VehicleMonitoringService.class);
@@ -36,14 +35,13 @@ public class NightVisionActivity extends Activity {
         super.onResume();
         mRunning = true;
         IntentFilter filter = new IntentFilter();
-        filter.addAction("com.ford.openxc.HEADLAMPS_OFF");
+        filter.addAction(VehicleMonitoringService.ACTION_VEHICLE_HEADLAMPS_OFF);
         registerReceiver(closeReceiver, filter);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mRunning = false;
         unregisterReceiver(closeReceiver);
     }
 

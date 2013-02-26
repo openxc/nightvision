@@ -16,35 +16,29 @@ import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.remote.VehicleServiceException;
 
 public class VehicleMonitoringService extends Service {
-
     private final static String TAG = "VehicleMonitoringService";
+    public static final String ACTION_VEHICLE_HEADLAMPS_OFF =
+        "com.ford.openxc.HEADLAMPS_OFF";
+
     private final Handler mHandler = new Handler();
     private VehicleManager mVehicleManager;
-    private boolean HeadlampStatusBool;
-    public static final String ACTION_VEHICLE_HEADLAMPS_ON = "com.ford.openxc.HEADLAMPS_ON";
-    public static final String ACTION_VEHICLE_HEADLAMPS_OFF = "com.ford.openxc.HEADLAMPS_OFF";
 
-    HeadlampStatus.Listener mHeadlampStatus =
+    HeadlampStatus.Listener mHeadlampListener =
             new HeadlampStatus.Listener() {
         public void receive(Measurement measurement) {
             final HeadlampStatus status = (HeadlampStatus) measurement;
             mHandler.post(new Runnable() {
                 public void run() {
-
-                    Log.w(TAG, status.getValue().toString());
-
-                    HeadlampStatusBool = status.getValue().booleanValue();
-
-                    if (HeadlampStatusBool && !NightVisionActivity.isRunning()){
-                        Intent launchIntent = new Intent(VehicleMonitoringService.this, NightVisionActivity.class);
-                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        VehicleMonitoringService.this.startActivity(launchIntent);
-                        Log.i(TAG, "Activity Launched");
-                    }
-                    else if (!HeadlampStatusBool){
-                        Intent headlampsOffIntent = new Intent(ACTION_VEHICLE_HEADLAMPS_OFF);
-                        sendBroadcast(headlampsOffIntent);
-                        Log.i(TAG, "Vehicle HEADLAMPS OFF Broadcast Intent Sent");
+                    if(status.getValue().booleanValue()) {
+                        if(!NightVisionActivity.isRunning()) {
+                            Intent intent = new Intent(
+                                    VehicleMonitoringService.this,
+                                    NightVisionActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            VehicleMonitoringService.this.startActivity(intent);
+                        }
+                    } else {
+                        sendBroadcast(new Intent(ACTION_VEHICLE_HEADLAMPS_OFF));
                     }
                 }
             });
@@ -59,7 +53,7 @@ public class VehicleMonitoringService extends Service {
 
             try {
                 mVehicleManager.addListener(HeadlampStatus.class,
-                        mHeadlampStatus);
+                        mHeadlampListener);
                 Log.i(TAG, "mVehicleManager listener added");
             } catch(VehicleServiceException e) {
                 Log.w(TAG, "Couldn't add listeners for measurements", e);
