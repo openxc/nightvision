@@ -13,12 +13,14 @@ import com.ford.openxc.webcam.WebcamPreview;
 
 public class NightvisionView extends WebcamPreview {
     private final static String TAG = "NightvisionView";
+    private final int DETECT_FRAME_FREQUENCY = 4;
 
     private static Paint sOverlayPaint = new Paint();
     private Bitmap mBitmapEdges;
     private Bitmap mBitmapObjectOverlay;
     private boolean mObjectInPreviousFrame = false;
     private MediaPlayer mMediaPlayer;
+    private int mFrameCount;
 
     public native void detectEdges(Bitmap imageBitmap, Bitmap edgeBitmap);
     public native boolean detectObjects(Bitmap edgeBitmap, Bitmap overlayBitmap);
@@ -61,21 +63,28 @@ public class NightvisionView extends WebcamPreview {
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
         initializeBitmaps(videoBitmap);
-        detectEdges(videoBitmap, mBitmapEdges);
+        canvas.drawColor(Color.BLACK);
 
-        mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
-        boolean objectDetected = detectObjects(mBitmapEdges,
-                mBitmapObjectOverlay);
-        if (!mObjectInPreviousFrame && objectDetected) {
-            mMediaPlayer.start();
-            mObjectInPreviousFrame = true;
-            Log.d(TAG, "Object detected");
-        } else if(mObjectInPreviousFrame && !objectDetected) {
-            mObjectInPreviousFrame = false;
-            Log.d(TAG, "Object left frame");
+        if(mFrameCount == DETECT_FRAME_FREQUENCY) {
+            detectEdges(videoBitmap, mBitmapEdges);
+
+            mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
+            boolean objectDetected = detectObjects(mBitmapEdges,
+                    mBitmapObjectOverlay);
+            if (!mObjectInPreviousFrame && objectDetected) {
+                mMediaPlayer.start();
+                mObjectInPreviousFrame = true;
+                Log.d(TAG, "Object detected");
+            } else if(mObjectInPreviousFrame && !objectDetected) {
+                mObjectInPreviousFrame = false;
+                Log.d(TAG, "Object left frame");
+            }
+
+            mFrameCount = 0;
+        } else {
+            mFrameCount++;
         }
 
-        canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(videoBitmap, null, getViewingWindow(), null);
         canvas.drawBitmap(mBitmapObjectOverlay, null, getViewingWindow(),
                 sOverlayPaint);
