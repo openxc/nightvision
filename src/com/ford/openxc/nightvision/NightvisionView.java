@@ -5,32 +5,25 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.view.SurfaceHolder;
 
 import com.ford.openxc.webcam.WebcamPreview;
 
 public class NightvisionView extends WebcamPreview {
+    private final static String TAG = "NightvisionView";
+    private final static int OBJECT_DETECT_BLOCK_SIZE_X = 8;
+    private final static int OBJECT_DETECT_BLOCK_SIZE_Y = 8;
 
-    private static String TAG = "NightvisionView";
-    public static final String NO_CAMERA_DETECTED = "com.ford.openxc.NO_CAMERA_DETECTED";
-
-    // TODO these are in so many places...
-    static final int IMG_WIDTH = 640;
-    static final int IMG_HEIGHT = 480;
-
-    private Bitmap mBitmapVideo = null;
     private Bitmap mBitmapGray = null;
     private Bitmap mBitmapEdges = null;
     private Bitmap mBitmapObjectOverlay = null;
 
-    private boolean everyOtherFrame = true;
-    private boolean objectDetected = false;
     private boolean objectInPrevFrame = false;
-    private float rate;
+    private MediaPlayer mMediaPlayer;
 
     public native void toGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
-    public native void pixeltomBitmapVideo(Bitmap bitmap);
     public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
     public native void showBitmap(Bitmap bitmapedges, Bitmap bitmapout);
 
@@ -40,102 +33,88 @@ public class NightvisionView extends WebcamPreview {
 
     public NightvisionView(Context context) {
         super(context);
+        mMediaPlayer = MediaPlayer.create(context, R.raw.alert);
     }
 
     @Override
-    public void run() {
-        MediaPlayer mp = MediaPlayer.create(mContext, R.raw.alert);
-        while(mRunning) {
-            synchronized(mServiceSyncToken) {
-                if(mWebcamManager == null) {
-                    try {
-                        mServiceSyncToken.wait();
-                    } catch(InterruptedException e) {
-                        break;
-                    }
-                }
+    public void surfaceChanged(SurfaceHolder holder, int format, int winWidth,
+            int winHeight) {
+        super.surfaceChanged(holder, format, winWidth, winHeight);
+        Rect window = getViewingWindow();
+        mBitmapObjectOverlay = Bitmap.createBitmap(window.width(),
+                window.height(), Bitmap.Config.ARGB_8888);
+        mBitmapGray = Bitmap.createBitmap(window.width(), window.height(),
+                Bitmap.Config.ALPHA_8);
+        mBitmapEdges = Bitmap.createBitmap(window.width(), window.height(),
+                Bitmap.Config.ALPHA_8);
+    }
 
-                if(!mWebcamManager.cameraAttached()) {
-                    mRunning = false;
-                }
+    protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
+        toGrayscale(videoBitmap, mBitmapGray);
+        detectEdges(mBitmapGray, mBitmapEdges);
+        showBitmap(mBitmapEdges, videoBitmap);
 
-                mBitmapVideo = mWebcamManager.getImage();
+        Paint overlayPaint = new Paint();
+        overlayPaint.setAlpha(0);
 
-                toGrayscale(mBitmapVideo, mBitmapGray);
-                detectEdges(mBitmapGray, mBitmapEdges);
-                showBitmap(mBitmapEdges, mBitmapVideo);
-
-                Paint overlayPaint = new Paint();
-                overlayPaint.setAlpha(0);
-
-                if (!objectInPrevFrame && objectDetected) {
-                    mp.start();
-                    objectInPrevFrame = true;
-                } else if (objectInPrevFrame && !objectDetected) {
-                    objectInPrevFrame = false;
-                }
-
-                overlayPaint.setAlpha(130);
-                if (everyOtherFrame == true) {
-                    everyOtherFrame = false;
-                    objectDetect();
-                } else {
-                    everyOtherFrame = true;
-                }
-
-                Canvas canvas = mHolder.lockCanvas();
-                if(canvas != null) {
-                    canvas.drawColor(Color.BLACK);
-                    canvas.drawBitmap(mBitmapVideo, null, mViewWindow, null);
-                    canvas.drawBitmap(mBitmapObjectOverlay, null, mViewWindow, overlayPaint);
-                    mHolder.unlockCanvasAndPost(canvas);
-                }
-            }
+        boolean objectDetected = detectObjects(videoBitmap,
+                mBitmapObjectOverlay);
+        if (!objectInPrevFrame && objectDetected) {
+            mMediaPlayer.start();
+            objectInPrevFrame = true;
+        } else if (objectInPrevFrame && !objectDetected) {
+            objectInPrevFrame = false;
         }
-    }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        super.surfaceCreated(holder);
-        mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
-        mBitmapGray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
-        mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ALPHA_8);
+        overlayPaint.setAlpha(130);
+        canvas.drawBitmap(videoBitmap, null, getViewingWindow(), overlayPaint);
+        canvas.drawBitmap(mBitmapObjectOverlay, null, getViewingWindow(),
+                overlayPaint);
     }
 
     /** Simple Object Detection
      *
      * This object detection limits the detection to a bounded area of interest
-     * that is the middle 50% of the screen. It then iterates through the bounded
-     * area looking at a smaller area of xBound*yBound. If that area contains more
-     * than 40% white pixels (edges) then the area is considered part of an object
-     * and it is marked so in the mBitmapObjectOverlay.
-     *
-     * */
-    public void objectDetect() {
-        int x, y, i, j, sum;
-        int xBound = 8;
-        int yBound = 8;
-        int[] overlaySection = new int [xBound * yBound];
-        mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
-        objectDetected = false;
+     * that is the middle 50% of the screen. It then iterates through the
+     * bounded area looking at a smaller area of OBJECT_DETECT_BLOCK_SIZE_X *
+     * OBJECT_DETECT_BLOCK_SIZE_Y. If that area contains more than 40% white
+     * pixels (edges) then the area is considered part of an object and it is
+     * marked so in the mBitmapObjectOverlay.
+     */
+    public boolean detectObjects(Bitmap videoBitmap, Bitmap overlayBitmap) {
+        overlayBitmap.eraseColor(Color.TRANSPARENT);
 
-        for (y=(int) (IMG_HEIGHT*.25); y < IMG_HEIGHT*.75; y+=(yBound/2)) {
-            for (x=(int) (IMG_WIDTH*.25); x < IMG_WIDTH*.75; x+=(xBound/2)) {
-                sum =0;
-                for (i=0; i < xBound; i++) {
-                    for (j=0 ;j < yBound; j++) {
-                        if (mBitmapVideo.getPixel((x+i),(y+j)) == Color.WHITE) {
+        boolean objectDetected = false;
+        Rect window = getViewingWindow();
+        int[] overlaySection = new int [OBJECT_DETECT_BLOCK_SIZE_X *
+                OBJECT_DETECT_BLOCK_SIZE_Y];
+        for(int y = (int) (window.height() * .25); y < window.height() * .75;
+                    y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
+            for(int x = (int) (window.width() * .25); x < window.width() * .75;
+                    x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
+                int sum = 0;
+                for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
+                    for(int j=0 ; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
+                        if(videoBitmap.getPixel((x + i), (y + j))
+                                == Color.WHITE) {
                             sum++;
-                            overlaySection[i+ (j*(yBound))] = -256;
+                            overlaySection[i + j *
+                                    OBJECT_DETECT_BLOCK_SIZE_Y] = -256;
                         }
                     }
                 }
 
-                if (sum > (yBound*xBound*.4)) {
-                    mBitmapObjectOverlay.setPixels(overlaySection, 0, xBound, x, y, xBound, yBound);
+                if (sum > (OBJECT_DETECT_BLOCK_SIZE_Y *
+                            OBJECT_DETECT_BLOCK_SIZE_X * .4)) {
+                    overlayBitmap.setPixels(overlaySection, 0,
+                            OBJECT_DETECT_BLOCK_SIZE_X,
+                            x, y,
+                            OBJECT_DETECT_BLOCK_SIZE_X,
+                            OBJECT_DETECT_BLOCK_SIZE_Y);
                     objectDetected = true;
                 }
             }
         }
+        return objectDetected;
     }
 }
