@@ -1,6 +1,6 @@
 #include "nightvision.h"
 
-void Java_com_camera_nightvision_CameraPreview_toGrayscale(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightvisionView_toGrayscale(JNIEnv* env,
         jobject thiz, jobject bitmapcolor, jobject bitmapgray) {
     int result;
     AndroidBitmapInfo infocolor;
@@ -53,7 +53,7 @@ void Java_com_camera_nightvision_CameraPreview_toGrayscale(JNIEnv* env,
 //two 3×3 matrices which are convolved with the original image to calculate
 //approximations of the derivatives - one for horizontal changes, and one for
 //vertical.
-void Java_com_camera_nightvision_CameraPreview_detectEdges(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         jobject thiz, jobject bitmapgray, jobject bitmapedges) {
     int ret;
     int Gx[3][3];
@@ -116,7 +116,7 @@ void Java_com_camera_nightvision_CameraPreview_detectEdges(JNIEnv* env,
 
 //This method converts the ALPHA_8 bitmap back to the RGBA format(image is
 // grayscale) for Android to be able to show it on the canvas
-void Java_com_camera_nightvision_CameraPreview_showBitmap(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightvisionView_showBitmap(JNIEnv* env,
         jobject thiz, jobject bitmapedge, jobject bitmapshow) {
     int ret;
     AndroidBitmapInfo infoedge;
