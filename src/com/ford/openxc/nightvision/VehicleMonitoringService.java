@@ -74,13 +74,11 @@ public class VehicleMonitoringService extends Service {
         }
     };
 
-    
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    
     @Override
     public void onCreate() {
         super.onCreate();

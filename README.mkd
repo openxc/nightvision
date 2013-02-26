@@ -86,15 +86,6 @@ Once the edges are detected, a rudimentary object detection algorithm finds
 clusters of edges that indicate an object on the road ahead. If an object is
 detected, it will be highlighted on the display and an alert will sound.
 
-## Relaunching the Application
-
-The application is designed to shutdown and display a warning if the webcam is
-unplugged, so there is no confusion about whether the warning is functioning
-properly or not.
-
-The app must be launched manually the first time after a disconnect in order to
-restart the vehicle monitor.
-
 ## License
 
 Copyright (c) 2012-2013 Ford Motor Company
