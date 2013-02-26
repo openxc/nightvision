@@ -73,17 +73,13 @@ public class NightvisionView extends WebcamPreview {
         mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
         boolean objectDetected = detectObjects(mBitmapEdges,
                 mBitmapObjectOverlay);
-        if(objectDetected) {
-            Log.d(TAG, "Object detected");
-        } else {
-            Log.d(TAG, "No object detected");
-        }
-
         if (!mObjectInPreviousFrame && objectDetected) {
             mMediaPlayer.start();
             mObjectInPreviousFrame = true;
+            Log.d(TAG, "Object detected");
         } else if(mObjectInPreviousFrame && !objectDetected) {
             mObjectInPreviousFrame = false;
+            Log.d(TAG, "Object left frame");
         }
 
         canvas.drawColor(Color.BLACK);
