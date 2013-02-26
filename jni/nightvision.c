@@ -140,6 +140,7 @@ void Java_com_ford_openxc_nightvision_NightvisionView_showBitmap(JNIEnv* env,
     void* pixelsshow;
     if((ret = AndroidBitmap_lockPixels(env, bitmapshow, &pixelsshow)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+        AndroidBitmap_unlockPixels(env, bitmapedge);
         return;
     }
 
