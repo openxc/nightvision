@@ -1,5 +1,4 @@
 #include "nightvision.h"
-
 #include <stdbool.h>
 
 void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* env,
@@ -44,7 +43,6 @@ void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* en
 
     AndroidBitmap_unlockPixels(env, bitmapcolor);
     AndroidBitmap_unlockPixels(env, bitmapgray);
-
 }
 
 /** Simple Object Detection
@@ -127,14 +125,15 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(JNIEnv* 
     return objectDetected;
 }
 
-//This function uses a variant of the Sobel operator to detect the edges in the
-//bitmap. It calculates the gradient of the image intensity at each point. The
-//result therefore shows how "abruptly" or "smoothly" the image changes at that
-//point, and therefore how likely it is that that part of the image represents
-//an edge, as well as how that edge is likely to be oriented. The operator uses
-//two 3×3 matrices which are convolved with the original image to calculate
-//approximations of the derivatives - one for horizontal changes, and one for
-//vertical.
+/** This function uses a variant of the Sobel operator to detect the edges in
+ * the bitmap. It calculates the gradient of the image intensity at each point.
+ * The result therefore shows how "abruptly" or "smoothly" the image changes at
+ * that point, and therefore how likely it is that that part of the image
+ * represents an edge, as well as how that edge is likely to be oriented. The
+ * operator uses two 3×3 matrices which are convolved with the original image to
+ * calculate approximations of the derivatives - one for horizontal changes, and
+ * one for vertical.
+ */
 void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         jobject thiz, jobject bitmapgray, jobject bitmapedges) {
     int ret;
@@ -168,22 +167,24 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         return;
     }
 
-    for(int y = 0; y < infogray.height; y++) {
-        for(int x = 0; x < infogray.width; x++) {
-            int sum = 0;
+    for(int y = 1; y < infogray.height - 2; y++) {
+        for(int x = 1; x < infogray.width - 2; x++) {
+            int sumX = 0, sumY = 0;
             // calc X and Y gradients
             for(int i = -1; i <= 1; i++) {
                 for(int j = -1; j <= 1; j++) {
-                    sum += abs((int)((*(pixelsgray + x + i + (y + j)
-                            * infogray.stride)) * Gx[i+1][j+1]));
-                    sum += abs((int)((*(pixelsgray + x + i + (y + j)
-                            * infogray.stride)) * Gy[i+1][j+1]));
+                    uint8_t pixel = *(pixelsgray + x + i +
+                            ((y + j) * infogray.stride));
+                    sumX += pixel * Gx[i + 1][j + 1];
+                    sumY += pixel * Gy[i + 1][j + 1];
                 }
             }
 
-            if(sum > 200) {
+            int sum = abs(sumX) + abs(sumY);
+
+            if(sum > 255) {
                 sum = 255;
-            } else if(sum < 50) {
+            } else if(sum < 0) {
                 sum = 0;
             }
             *(pixelsedge + x + y * infogray.stride) = (uint8_t) sum;
