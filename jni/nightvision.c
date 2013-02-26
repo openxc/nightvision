@@ -139,18 +139,20 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
  */
 void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         jobject thiz, jobject bitmapgray, jobject bitmapedges) {
+    int Gx[3][3] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
+    };
+
+    int Gy[3][3]  = {
+        {1, 2, 1},
+        {0, 0, 0},
+        {-1, -2, -1}
+    };
+
+    uint8_t* imagePixels;
     int ret;
-    int Gx[3][3];
-    int Gy[3][3];
-
-    Gx[0][0] = -1;Gx[0][1] = 0;Gx[0][2] = 1;
-    Gx[1][0] = -2;Gx[1][1] = 0;Gx[1][2] = 2;
-    Gx[2][0] = -1;Gx[2][1] = 0;Gx[2][2] = 1;
-
-    Gy[0][0] = 1;Gy[0][1] = 2;Gy[0][2] = 1;
-    Gy[1][0] = 0;Gy[1][1] = 0;Gy[1][2] = 0;
-    Gy[2][0] = -1;Gy[2][1] = -2;Gy[2][2] = -1;
-
     uint8_t* pixelsgray;
     if((ret = AndroidBitmap_lockPixels(env, bitmapgray,
                     (void*)&pixelsgray)) < 0) {
