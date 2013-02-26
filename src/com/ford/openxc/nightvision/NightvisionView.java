@@ -35,7 +35,7 @@ public class NightvisionView extends WebcamPreview {
     static {
         System.loadLibrary("nightvision");
         sOverlayPaint.setAlpha(130);
-        sOverlayPaint.setColor(Color.WHITE);
+        sOverlayPaint.setColor(Color.RED);
     }
 
     public NightvisionView(Context context) {
