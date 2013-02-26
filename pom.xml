@@ -70,28 +70,33 @@
 
                     <extensions>true</extensions>
                     <configuration>
-                        <deleteConflictingFiles>true</deleteConflictingFiles>
-                        <attachNativeArtifacts>true</attachNativeArtifacts>
-                        <clearNativeArtifacts>false</clearNativeArtifacts>
-                        <sign>
-                            <debug>false</debug>
-                        </sign>
-                        <proguard>
-                            <skip>true</skip>
-                        </proguard>
                         <dex>
                             <jvmArguments>
                                 <argument>-Xms256m</argument>
-                                <argument>-Xmx512m</argument>
+                                <argument>-Xmx1024m</argument>
                             </jvmArguments>
                         </dex>
                         <sdk>
                             <platform>${android.platform}</platform>
                         </sdk>
-                        <undeployBeforeDeploy>false</undeployBeforeDeploy>
-                        <testDebug>false</testDebug>
                     </configuration>
-                    </plugin>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>2.5</version>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>libs</directory>
+                            </fileset>
+                            <fileset>
+                                <directory>obj</directory>
+                            </fileset>
+                        </filesets>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
         <plugins>

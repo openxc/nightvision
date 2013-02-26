@@ -18,6 +18,7 @@
 
     <application android:label="@string/app_name" android:allowBackup="true"
             android:debuggable="true">
+
         <activity
                 android:name=".NightVisionActivity"
                 android:launchMode="singleTask"
