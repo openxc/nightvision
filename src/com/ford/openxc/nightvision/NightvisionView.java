@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
+import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
 import com.ford.openxc.webcam.WebcamPreview;
@@ -33,7 +34,16 @@ public class NightvisionView extends WebcamPreview {
 
     public NightvisionView(Context context) {
         super(context);
-        mMediaPlayer = MediaPlayer.create(context, R.raw.alert);
+        init();
+    }
+
+    public NightvisionView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    private void init() {
+        mMediaPlayer = MediaPlayer.create(getContext(), R.raw.alert);
     }
 
     @Override
