@@ -69,6 +69,11 @@ length of the headlights.
 1. Assuming the VI is attached to the OBD-II port, connect the tablet to it via
    USB or Bluetooth.
 
+
+**With Maven:**
+
+    ndk-build && mvn package android:deploy android:run
+
 ## Functionality
 
 Through the use of the CAN Translator, Ford Night Vision continually reads
