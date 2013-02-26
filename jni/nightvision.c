@@ -1,6 +1,6 @@
 #include "nightvision.h"
 
-void Java_com_ford_openxc_nightvision_NightvisionView_toGrayscale(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* env,
         jobject thiz, jobject bitmapcolor, jobject bitmapgray) {
     int result;
     AndroidBitmapInfo infocolor;
@@ -116,7 +116,7 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
 
 //This method converts the ALPHA_8 bitmap back to the RGBA format(image is
 // grayscale) for Android to be able to show it on the canvas
-void Java_com_ford_openxc_nightvision_NightvisionView_showBitmap(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightvisionView_grayscaleToRGBA(JNIEnv* env,
         jobject thiz, jobject bitmapedge, jobject bitmapshow) {
     int ret;
     AndroidBitmapInfo infoedge;

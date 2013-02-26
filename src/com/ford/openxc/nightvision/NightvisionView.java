@@ -27,9 +27,9 @@ public class NightvisionView extends WebcamPreview {
     private boolean objectInPrevFrame = false;
     private MediaPlayer mMediaPlayer;
 
-    public native void toGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
+    public native void rgbaToGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
+    public native void grayscaleToRGBA(Bitmap bitmapedges, Bitmap bitmapout);
     public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
-    public native void showBitmap(Bitmap bitmapedges, Bitmap bitmapout);
 
     static {
         System.loadLibrary("nightvision");
@@ -62,9 +62,9 @@ public class NightvisionView extends WebcamPreview {
     }
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
-        toGrayscale(videoBitmap, mBitmapGray);
+        rgbaToGrayscale(videoBitmap, mBitmapGray);
         detectEdges(mBitmapGray, mBitmapEdges);
-        showBitmap(mBitmapEdges, videoBitmap);
+        grayscaleToRGBA(mBitmapEdges, videoBitmap);
 
         Paint overlayPaint = new Paint();
         overlayPaint.setAlpha(0);
