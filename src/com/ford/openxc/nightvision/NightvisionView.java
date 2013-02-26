@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
@@ -16,6 +15,10 @@ public class NightvisionView extends WebcamPreview {
     private final static String TAG = "NightvisionView";
     private final static int OBJECT_DETECT_BLOCK_SIZE_X = 8;
     private final static int OBJECT_DETECT_BLOCK_SIZE_Y = 8;
+
+    // TODO these are duplicated from the android-webcam library
+    private final static int IMG_WIDTH = 640;
+    private final static int IMG_HEIGHT = 480;
 
     private Bitmap mBitmapGray = null;
     private Bitmap mBitmapEdges = null;
@@ -50,12 +53,11 @@ public class NightvisionView extends WebcamPreview {
     public void surfaceChanged(SurfaceHolder holder, int format, int winWidth,
             int winHeight) {
         super.surfaceChanged(holder, format, winWidth, winHeight);
-        Rect window = getViewingWindow();
-        mBitmapObjectOverlay = Bitmap.createBitmap(window.width(),
-                window.height(), Bitmap.Config.ARGB_8888);
-        mBitmapGray = Bitmap.createBitmap(window.width(), window.height(),
+        mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
+                Bitmap.Config.ARGB_8888);
+        mBitmapGray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
-        mBitmapEdges = Bitmap.createBitmap(window.width(), window.height(),
+        mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
     }
 
@@ -95,12 +97,11 @@ public class NightvisionView extends WebcamPreview {
         overlayBitmap.eraseColor(Color.TRANSPARENT);
 
         boolean objectDetected = false;
-        Rect window = getViewingWindow();
         int[] overlaySection = new int [OBJECT_DETECT_BLOCK_SIZE_X *
                 OBJECT_DETECT_BLOCK_SIZE_Y];
-        for(int y = (int) (window.height() * .25); y < window.height() * .75;
+        for(int y = (int) (IMG_HEIGHT * .25); y < IMG_HEIGHT * .75;
                     y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
-            for(int x = (int) (window.width() * .25); x < window.width() * .75;
+            for(int x = (int) (IMG_WIDTH * .25); x < IMG_WIDTH * .75;
                     x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
                 int sum = 0;
                 for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
