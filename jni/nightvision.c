@@ -49,12 +49,14 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
             * OBJECT_DETECT_BLOCK_SIZE_Y;
 
     bool objectDetected = false;
-    for(int y = (int) (edgeInfo.height * .25); y < edgeInfo.height * .75;
+    for(int y = (int) (edgeInfo.height * DETECTION_WINDOW_SIZE);
+            y < edgeInfo.height * (1 - DETECTION_WINDOW_SIZE);
             y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
         uint8_t* edgeline = (uint8_t*) (edgePixels + edgeInfo.stride * y);
         uint8_t* overlayline = (uint8_t*) (overlayPixels + overlayInfo.stride *
                 y);
-        for(int x = (int) (edgeInfo.width * .25); x < edgeInfo.width * .75;
+        for(int x = (int) (edgeInfo.width * DETECTION_WINDOW_SIZE);
+                x < edgeInfo.width * (1 - DETECTION_WINDOW_SIZE);
                 x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
             int sum = 0;
             for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
@@ -139,10 +141,12 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         return;
     }
 
-    // TODO no use detecting images on the entire thing since we only check for
-    // objects in a small window
-    for(int y = 1; y < imageInfo.height - 1; y++) {
-        for(int x = 1; x < imageInfo.width - 1; x++) {
+    for(int y = (int) (imageInfo.height * DETECTION_WINDOW_SIZE);
+            y < imageInfo.height * (1 - DETECTION_WINDOW_SIZE);
+            y++) {
+        for(int x = (int) (edgeInfo.width * DETECTION_WINDOW_SIZE);
+                x < edgeInfo.width * (1 - DETECTION_WINDOW_SIZE);
+                x++) {
             int sumX = 0, sumY = 0;
             // calc X and Y gradients
             for(int i = -1; i <= 1; i++) {
