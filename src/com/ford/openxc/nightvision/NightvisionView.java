@@ -20,9 +20,10 @@ public class NightvisionView extends WebcamPreview {
     private final static int IMG_WIDTH = 640;
     private final static int IMG_HEIGHT = 480;
 
-    private Bitmap mBitmapGray = null;
-    private Bitmap mBitmapEdges = null;
-    private Bitmap mBitmapObjectOverlay = null;
+    private Bitmap mBitmapGray;
+    private Bitmap mBitmapEdges;
+    private Bitmap mBitmapEdgesRGBA;
+    private Bitmap mBitmapObjectOverlay;
 
     private boolean objectInPrevFrame = false;
     private MediaPlayer mMediaPlayer;
@@ -59,17 +60,19 @@ public class NightvisionView extends WebcamPreview {
                 Bitmap.Config.ALPHA_8);
         mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
+        mBitmapEdgesRGBA = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
+                Bitmap.Config.ARGB_8888);
     }
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
         rgbaToGrayscale(videoBitmap, mBitmapGray);
         detectEdges(mBitmapGray, mBitmapEdges);
-        grayscaleToRGBA(mBitmapEdges, videoBitmap);
+        grayscaleToRGBA(mBitmapEdges, mBitmapEdgesRGBA);
 
         Paint overlayPaint = new Paint();
         overlayPaint.setAlpha(0);
 
-        boolean objectDetected = detectObjects(videoBitmap,
+        boolean objectDetected = detectObjects(mBitmapEdgesRGBA,
                 mBitmapObjectOverlay);
         if (!objectInPrevFrame && objectDetected) {
             mMediaPlayer.start();
@@ -79,7 +82,8 @@ public class NightvisionView extends WebcamPreview {
         }
 
         overlayPaint.setAlpha(130);
-        canvas.drawBitmap(videoBitmap, null, getViewingWindow(), overlayPaint);
+        canvas.drawColor(Color.BLACK);
+        canvas.drawBitmap(videoBitmap, null, getViewingWindow(), null);
         canvas.drawBitmap(mBitmapObjectOverlay, null, getViewingWindow(),
                 overlayPaint);
     }

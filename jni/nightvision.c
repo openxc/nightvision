@@ -24,20 +24,20 @@ void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* en
     void* pixelsgray;
     if((result = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
+        AndroidBitmap_unlockPixels(env, bitmapcolor);
         return;
     }
 
     // modify pixels with image processing algorithm
     for(int y = 0; y < infocolor.height; y++) {
-        argb* line = (argb*) pixelscolor;
-        uint8_t* grayline =(uint8_t*) pixelsgray;
-        for(int x = 0; x < infocolor.width; x++) {
-            grayline[x] = 0.3 * line[x].red + 0.59 * line[x].green +
-                0.11 * line[x].blue;
-        }
+        argb* colorLine = (argb*) (pixelscolor + infocolor.stride * y);
+        uint8_t* grayscaleLine = (uint8_t*) (pixelsgray + infogray.stride * y);
 
-        pixelscolor =(char*)pixelscolor + infocolor.stride;
-        pixelsgray =(char*) pixelsgray + infogray.stride;
+        for(int x = 0; x < infocolor.width; x++) {
+            grayscaleLine[x] = 0.3 * colorLine[x].red
+                + 0.59 * colorLine[x].green
+                + 0.11 * colorLine[x].blue;
+        }
     }
 
     AndroidBitmap_unlockPixels(env, bitmapcolor);
@@ -67,13 +67,13 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
     Gy[1][0] = 0;Gy[1][1] = 0;Gy[1][2] = 0;
     Gy[2][0] = -1;Gy[2][1] = -2;Gy[2][2] = -1;
 
-    void* pixelsgray;
+    uint8_t* pixelsgray;
     if((ret = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         return;
     }
 
-    void* pixelsedge;
+    uint8_t* pixelsedge;
     if((ret = AndroidBitmap_lockPixels(env, bitmapedges, &pixelsedge)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         return;
@@ -82,21 +82,20 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
     AndroidBitmapInfo infogray;
     if((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        AndroidBitmap_unlockPixels(env, bitmapedges);
         return;
     }
 
     for(int y = 0; y < infogray.height; y++) {
         for(int x = 0; x < infogray.width; x++) {
             int sum = 0;
-            if(y > 0 && y < infogray.height && x > 0 && x < infogray.width) {
-                // calc X and Y gradients
-                for(int i = -1; i <= 1; i++) {
-                    for(int j = -1; j <= 1; j++) {
-                        sum += abs((int)((*(((uint8_t*)pixelsgray) + x + i + (y + j)
-                                * infogray.stride)) * Gx[i+1][j+1]));
-                        sum += abs((int)((*(((uint8_t*)pixelsgray) + x + i + (y + j)
-                                * infogray.stride)) * Gy[i+1][j+1]));
-                    }
+            // calc X and Y gradients
+            for(int i = -1; i <= 1; i++) {
+                for(int j = -1; j <= 1; j++) {
+                    sum += abs((int)((*(pixelsgray + x + i + (y + j)
+                            * infogray.stride)) * Gx[i+1][j+1]));
+                    sum += abs((int)((*(pixelsgray + x + i + (y + j)
+                            * infogray.stride)) * Gy[i+1][j+1]));
                 }
             }
 
@@ -105,8 +104,7 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
             } else if(sum < 50) {
                 sum = 0;
             }
-            *(((uint8_t*)pixelsedge) + x + y * infogray.width) =
-                    0 + (uint8_t) sum;
+            *(pixelsedge + x + y * infogray.width) = 0 + (uint8_t) sum;
         }
     }
 
@@ -114,8 +112,10 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
     AndroidBitmap_unlockPixels(env, bitmapedges);
 }
 
-//This method converts the ALPHA_8 bitmap back to the RGBA format(image is
-// grayscale) for Android to be able to show it on the canvas
+/**
+ * This method converts the ALPHA_8 bitmap back to the RGBA format(image is
+ * grayscale) for Android to be able to show it on the canvas
+ */
 void Java_com_ford_openxc_nightvision_NightvisionView_grayscaleToRGBA(JNIEnv* env,
         jobject thiz, jobject bitmapedge, jobject bitmapshow) {
     int ret;
@@ -145,12 +145,12 @@ void Java_com_ford_openxc_nightvision_NightvisionView_grayscaleToRGBA(JNIEnv* en
     }
 
     for(int y = 0; y < infoedge.height; y++) {
-        argb* edgeLine = (argb*) (pixelsedge + infoedge.stride * y);
+        uint8_t* edgeLine = (uint8_t*) (pixelsedge + infoedge.stride * y);
         argb* showLine = (argb*) (pixelsshow + infoshow.stride * y);
 
         for(int x = 0; x < infoedge.width; x++) {
             showLine[x].alpha = showLine[x].red = showLine[x].green =
-                showLine[x].blue = edgeLine[x].red;
+                showLine[x].blue = edgeLine[x];
         }
     }
 
