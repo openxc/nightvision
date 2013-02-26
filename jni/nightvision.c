@@ -1,8 +1,8 @@
 #include "nightvision.h"
 #include <stdbool.h>
 
-void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* env,
-        jobject thiz, jobject bitmapcolor, jobject bitmapgray) {
+void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(
+        JNIEnv* env, jobject thiz, jobject bitmapcolor, jobject bitmapgray) {
     int result;
     AndroidBitmapInfo infocolor;
     if((result = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
@@ -17,7 +17,8 @@ void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* en
     }
 
     void* pixelscolor;
-    if((result = AndroidBitmap_lockPixels(env, bitmapcolor, &pixelscolor)) < 0) {
+    if((result = AndroidBitmap_lockPixels(env, bitmapcolor,
+                    &pixelscolor)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
         return;
     }
@@ -54,8 +55,8 @@ void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* en
  * pixels (edges) then the area is considered part of an object and it is
  * marked so in the mBitmapObjectOverlay.
  */
-jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(JNIEnv* env,
-        jobject thiz, jobject bitmapedge, jobject bitmapoverlay) {
+jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
+        JNIEnv* env, jobject thiz, jobject bitmapedge, jobject bitmapoverlay) {
     AndroidBitmapInfo infoedge;
     int result;
     if((result = AndroidBitmap_getInfo(env, bitmapedge, &infoedge)) < 0) {
@@ -76,7 +77,8 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(JNIEnv* 
     }
 
     void* pixelsoverlay;
-    if((result = AndroidBitmap_lockPixels(env, bitmapoverlay, &pixelsoverlay)) < 0) {
+    if((result = AndroidBitmap_lockPixels(env, bitmapoverlay,
+                    &pixelsoverlay)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
         AndroidBitmap_unlockPixels(env, bitmapedge);
         return false;
@@ -92,26 +94,27 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(JNIEnv* 
     for(int y = (int) (infoedge.height * .25); y < infoedge.height * .75;
             y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
         uint8_t* edgeline = (uint8_t*) (pixelsedge + infoedge.stride * y);
-        uint8_t* overlayline = (uint8_t*) (pixelsoverlay + infooverlay.stride * y);
+        uint8_t* overlayline = (uint8_t*) (pixelsoverlay + infooverlay.stride *
+                y);
         for(int x = (int) (infoedge.width * .25); x < infoedge.width * .75;
                 x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
             int sum = 0;
             for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
                 for(int j = 0; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
-                    uint8_t pixel = *(edgeline + x + i + j * infooverlay.stride);
+                    uint8_t pixel = *(edgeline + x + i + j *
+                            infooverlay.stride);
                     if(pixel == 255) {
                         sum++;
                     }
                 }
             }
 
-            // TODO this is skipping lines because of the outer loop, so the
-            // overlay box is a little sketchy
             if (sum > OBJECT_DETECT_BLOCK_AREA * .4) {
                 for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
-                    for(int j = 0 ; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
-                        uint8_t pixel = *(edgeline + x + i + j * infooverlay.stride);
-                        *(overlayline + x + i + j) = 255;
+                    for(int j = 0; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
+                        uint8_t pixel = *(edgeline + x + i + j *
+                                infoedge.stride);
+                        *(overlayline + x + i + j * infooverlay.stride) = 255;
                     }
                 }
                 objectDetected = true;
@@ -149,13 +152,15 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
     Gy[2][0] = -1;Gy[2][1] = -2;Gy[2][2] = -1;
 
     uint8_t* pixelsgray;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapgray, (void*)&pixelsgray)) < 0) {
+    if((ret = AndroidBitmap_lockPixels(env, bitmapgray,
+                    (void*)&pixelsgray)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         return;
     }
 
     uint8_t* pixelsedge;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapedges, (void*)&pixelsedge)) < 0) {
+    if((ret = AndroidBitmap_lockPixels(env, bitmapedges,
+                    (void*)&pixelsedge)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         return;
     }
