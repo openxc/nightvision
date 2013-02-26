@@ -11,8 +11,8 @@ import android.util.Log;
 
 import com.ford.openxc.webcam.WebcamPreview;
 
-public class NightvisionView extends WebcamPreview {
-    private final static String TAG = "NightvisionView";
+public class NightVisionView extends WebcamPreview {
+    private final static String TAG = "NightVisionView";
     private final int DETECT_FRAME_FREQUENCY = 4;
 
     private static Paint sOverlayPaint = new Paint();
@@ -65,12 +65,12 @@ public class NightvisionView extends WebcamPreview {
         sOverlayPaint.setColor(Color.RED);
     }
 
-    public NightvisionView(Context context) {
+    public NightVisionView(Context context) {
         super(context);
         init();
     }
 
-    public NightvisionView(Context context, AttributeSet attrs) {
+    public NightVisionView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }

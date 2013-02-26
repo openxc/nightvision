@@ -3,7 +3,7 @@
 #include <android/bitmap.h>
 #include <stdlib.h>
 
-#define LOG_TAG "NightvisionJNI"
+#define LOG_TAG "NightVisionJNI"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
@@ -26,7 +26,7 @@ typedef struct {
     uint8_t alpha;
 } argb;
 
-void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightVisionView_detectEdges(JNIEnv* env,
         jobject thiz, jobject bitmapcolor, jobject bitmapedges);
-jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
+jboolean Java_com_ford_openxc_nightvision_NightVisionView_detectObjects(
         JNIEnv* env, jobject thiz, jobject bitmapedge, jobject bitmapoverlay);

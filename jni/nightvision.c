@@ -6,7 +6,7 @@ uint8_t rgbToGrayscale(argb* pixel) {
     return 0.3 * pixel->red + 0.59 * pixel->green + 0.11 * pixel->blue;
 }
 
-jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
+jboolean Java_com_ford_openxc_nightvision_NightVisionView_detectObjects(
         JNIEnv* env, jobject thiz, jobject edgeBitmap, jobject overlayBitmap) {
     AndroidBitmapInfo edgeInfo;
     int result;
@@ -75,7 +75,7 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
     return objectDetected;
 }
 
-void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
+void Java_com_ford_openxc_nightvision_NightVisionView_detectEdges(JNIEnv* env,
         jobject thiz, jobject imageBitmap, jobject edgeBitmap) {
     uint8_t* imagePixels;
     int ret;
