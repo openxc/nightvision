@@ -7,33 +7,36 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.ford.openxc.webcam.WebcamPreview;
 
 public class NightvisionView extends WebcamPreview {
     private final static String TAG = "NightvisionView";
-    private final static int OBJECT_DETECT_BLOCK_SIZE_X = 8;
-    private final static int OBJECT_DETECT_BLOCK_SIZE_Y = 8;
 
     // TODO these are duplicated from the android-webcam library
     private final static int IMG_WIDTH = 640;
     private final static int IMG_HEIGHT = 480;
 
+    private static Paint sOverlayPaint = new Paint();
+
     private Bitmap mBitmapGray;
     private Bitmap mBitmapEdges;
-    private Bitmap mBitmapEdgesRGBA;
     private Bitmap mBitmapObjectOverlay;
 
-    private boolean objectInPrevFrame = false;
+    private boolean mObjectInPreviousFrame = false;
     private MediaPlayer mMediaPlayer;
 
     public native void rgbaToGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
     public native void grayscaleToRGBA(Bitmap bitmapedges, Bitmap bitmapout);
     public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
+    public native boolean detectObjects(Bitmap bitmapedge, Bitmap bitmapoverlay);
 
     static {
         System.loadLibrary("nightvision");
+        sOverlayPaint.setAlpha(130);
+        sOverlayPaint.setColor(Color.WHITE);
     }
 
     public NightvisionView(Context context) {
@@ -55,81 +58,38 @@ public class NightvisionView extends WebcamPreview {
             int winHeight) {
         super.surfaceChanged(holder, format, winWidth, winHeight);
         mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ARGB_8888);
+                Bitmap.Config.ALPHA_8);
         mBitmapGray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
         mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
-        mBitmapEdgesRGBA = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ARGB_8888);
     }
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
         rgbaToGrayscale(videoBitmap, mBitmapGray);
+        // TODO this is EXTREMELY sensitive, basically everything gets whited
+        // out as an edge
         detectEdges(mBitmapGray, mBitmapEdges);
-        grayscaleToRGBA(mBitmapEdges, mBitmapEdgesRGBA);
 
-        Paint overlayPaint = new Paint();
-        overlayPaint.setAlpha(0);
-
-        boolean objectDetected = detectObjects(mBitmapEdgesRGBA,
+        mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
+        boolean objectDetected = detectObjects(mBitmapEdges,
                 mBitmapObjectOverlay);
-        if (!objectInPrevFrame && objectDetected) {
-            mMediaPlayer.start();
-            objectInPrevFrame = true;
-        } else if (objectInPrevFrame && !objectDetected) {
-            objectInPrevFrame = false;
+        if(objectDetected) {
+            Log.d(TAG, "Object detected");
+        } else {
+            Log.d(TAG, "No object detected");
         }
 
-        overlayPaint.setAlpha(130);
+        if (!mObjectInPreviousFrame && objectDetected) {
+            mMediaPlayer.start();
+            mObjectInPreviousFrame = true;
+        } else if(mObjectInPreviousFrame && !objectDetected) {
+            mObjectInPreviousFrame = false;
+        }
+
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(videoBitmap, null, getViewingWindow(), null);
         canvas.drawBitmap(mBitmapObjectOverlay, null, getViewingWindow(),
-                overlayPaint);
-    }
-
-    /** Simple Object Detection
-     *
-     * This object detection limits the detection to a bounded area of interest
-     * that is the middle 50% of the screen. It then iterates through the
-     * bounded area looking at a smaller area of OBJECT_DETECT_BLOCK_SIZE_X *
-     * OBJECT_DETECT_BLOCK_SIZE_Y. If that area contains more than 40% white
-     * pixels (edges) then the area is considered part of an object and it is
-     * marked so in the mBitmapObjectOverlay.
-     */
-    public boolean detectObjects(Bitmap videoBitmap, Bitmap overlayBitmap) {
-        overlayBitmap.eraseColor(Color.TRANSPARENT);
-
-        boolean objectDetected = false;
-        int[] overlaySection = new int [OBJECT_DETECT_BLOCK_SIZE_X *
-                OBJECT_DETECT_BLOCK_SIZE_Y];
-        for(int y = (int) (IMG_HEIGHT * .25); y < IMG_HEIGHT * .75;
-                    y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
-            for(int x = (int) (IMG_WIDTH * .25); x < IMG_WIDTH * .75;
-                    x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
-                int sum = 0;
-                for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
-                    for(int j=0 ; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
-                        if(videoBitmap.getPixel((x + i), (y + j))
-                                == Color.WHITE) {
-                            sum++;
-                            overlaySection[i + j *
-                                    OBJECT_DETECT_BLOCK_SIZE_Y] = -256;
-                        }
-                    }
-                }
-
-                if (sum > (OBJECT_DETECT_BLOCK_SIZE_Y *
-                            OBJECT_DETECT_BLOCK_SIZE_X * .4)) {
-                    overlayBitmap.setPixels(overlaySection, 0,
-                            OBJECT_DETECT_BLOCK_SIZE_X,
-                            x, y,
-                            OBJECT_DETECT_BLOCK_SIZE_X,
-                            OBJECT_DETECT_BLOCK_SIZE_Y);
-                    objectDetected = true;
-                }
-            }
-        }
-        return objectDetected;
+                sOverlayPaint);
     }
 }

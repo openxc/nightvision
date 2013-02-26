@@ -20,3 +20,5 @@ void Java_com_ford_openxc_nightvision_NightvisionView_grayscaleToRGBA(JNIEnv* en
         jobject thiz, jobject bitmapedge, jobject bitmapout);
 void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(JNIEnv* env,
         jobject thiz, jobject bitmapcolor, jobject bitmapgray);
+jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(JNIEnv* env,
+        jobject thiz, jobject bitmapedge, jobject bitmapoverlay);
