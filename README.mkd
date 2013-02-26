@@ -1,22 +1,19 @@
-Night vision application for Obstacle Detection
+Nighttime Forward Collision Warning with OpenXC
 ==================================================
 
-This document assumes the user has access to an OpenXC CAN Translator.
+This Nighttime Forward Collision Warning is an Android app that uses OpenXC and
+a standard USB webcam to add "night vision" to a car with off-the-shelf parts.
+The webcam faces forward from the dashboard and uses edge detection to detect
+objects on the road in the path of the vehicle (i.e. deer). Samantha Skinger
+developed the first version of this app as a summer intern at Ford in 2012. The
+application is tuned for rural night driving and doesn't cope well with city
+lights or daylight.
 
-
-This application is meant to assist drivers in identifying potentially
-obstructive objects on the immediate roadway during night time driving
-scenarios. This application is not meant for city driving or for daylight
-driving stiauations. This application provides an alternative to the built in
-night vision camera systems offered by some manufacturers i.e. an aftermarket
-option.
-
-Ford Night Vision System is intended to be used with an Android device that has
-a fixed location, preferably permanently, in the vehicle. For example, mounted
-on the dash. Disclaimer: Never mount anything on the dash such that the view of
-the driver is impeeded.  As this application serves to increase the level of
-safety, the device should never be mounted in such a way that safety is
-sacrificed.
+**Disclaimer** This application is intended to be used with a display device
+that has a fixed, preferably permanent location in the vehicle. For example,
+mounted on the dash. Never mount anything on the dash such that the driver's
+view is impeded. While the rearview camera application may help increase
+visibility, the OpenXC platform does not make any claims of a safety benefit.
 
 ## Dependencies
 
@@ -27,11 +24,16 @@ sacrificed.
    can [access UVC video devices](#android-usb-webcam).
 * [USB Webcam][] supporting UVC and a 640x480 resolution in the YUYV format.
 * [OpenXC Vehicle
-   Interface](https://openxcplatform.com/vehicle-interface/index.html) with
+   Interface](https://openxcplatform.com/vehicle-interface/index.html) (VI) with
    vehicle-specific firmware
 * [OpenXC-supported
    vehicle](http://openxcplatform.com/vehicle-interface/output-format.html)
 * USB hub (if you will be using the VI over USB in addition to the camera)
+
+This application was tested with a webcam with the infrared filter removed and
+with IR illuminators on the front of the car. The visibility was not any greater
+than with headlights alone, but there may still be a workable passive IR
+solution that can improve detection distance.
 
 **Software**
 
@@ -41,73 +43,57 @@ sacrificed.
 * [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html)
 * [Android Webcam library](https://github.com/openxc/android-webcam)
 
-Using a night vision camera, either a CCTV night vision camera or a webcamera
-with the IR filter removed, with an infrared illuminator to increase visibility
-does not produce any significant improvement over the results produced by an
-average webcam with the highbeams turned on. This is because the object
-detection only works on the road immediately in front of the vehicle and the IR
-illuminator will most likely not be powerful enough to illuminate beyond the
-length of the headlights.
-
 ## Installation instructions
 
 1. Install the [OpenXC
    Enabler](http://openxcplatform.com/getting-started/library-installation.html#enabler)
    to the device.
-1. Run `ndk-build` in the `nightvision` project folder to compile the native
+1. Run `ndk-build` in the `android-webcam` project folder to compile the native
    camera library.
-1. Install the `RearviewCamera` application to the device.
-1. Start the app once, then restart device to make sure the `RearviewCamera`
-   service is properly registered to begin at bootup and start moniotirng the
-   gear position.
+1. Run `ndk-build` in the `nightvision` project folder to compile the native
+   nightvision extensions.
+1. Install the `NightVisionActivity` application to the device.
+1. Start the app once, then restart device to make sure the
+   `VehicleMonitoringService` service is properly registered to begin at bootup
+   and start monitoring the gear position.
 1. Mount the Android device where it will be secure and visible to the driver
    when backing up, but not in the way of normal driving.
-1. Mount USB webcam on dashboard or windshield (we recommend using velcro and
-   attaching the device on the windshield behind the rearview mirror)
-1. Run a USB extension cable from the webcam, through the trunk and up to the
-   tablet.
+1. Mount the USB webcam on dashboard or windshield and plug into the Android
+   device. We recommend using velcro and attaching the camera to the back of the
+   rearview mirror.
 1. Assuming the VI is attached to the OBD-II port, connect the tablet to it via
    USB or Bluetooth.
 
-
 **With Maven:**
 
-    ndk-build && mvn package android:deploy android:run
+Follow the directions to install the [Android Webcam
+library](https://github.com/openxc/android-webcam), then:
+
+    $ cd nightvision
+    $ ndk-build && mvn package android:deploy android:run
 
 ## Functionality
 
-Through the use of the CAN Translator, Ford Night Vision continually reads
-real-time vehicle data.  The app monitors the vehicle's headlamp status to
-activate the app when the headlamps are turned on and deactivate the app when
-the headlamps are turned off. The Ford Night Vision app offers three system
-settings that the user can change to customize the app:
+The app continuously reads vehicle data from the VI and watches for changes in
+`headlamp_status` to determine if the nighttime warning should be activated.
+
+When enabled, the feed from the webcam is passed first to an implementation of
+the Sobel edge detection algorithm. The detection focuses on 50% of the display
+area around the center, since this is where the horizon of the road will be
+while driving.
+
+Once the edges are detected, a rudimentary object detection algorithm finds
+clusters of edges that indicate an object on the road ahead. If an object is
+detected, it will be highlighted on the display and an alert will sound.
 
 ## Relaunching the Application
 
-With safety as a top priority, the application is designed to close itself and
-display a warning message/vibration if one of the USB devices is unplugged so
-that the user is warned that the app is no longer running.
+The application is designed to shutdown and display a warning if the webcam is
+unplugged, so there is no confusion about whether the warning is functioning
+properly or not.
 
-Currently, the app must be relaunched manually the first time after a disconnect
-in order to restart the VehicleMonitoringService (see below). It is recommended
-that you check the enabler or VehicleDashboard in order to ensure that messages
-are flowing from the CAN Translator.
-
-Code intricacies:
-
-The method objectDetect() performs a very simple object detection routine within
-an area of interest that is approximately the area of roadway in front of the
-vehicle. The method takes small, square sections of the area of interest and
-calcualtes the percentage of the section that is an edge. If the percentage is
-greater than 40% then the area is marked as an 'object' and is added to the
-highlighted overlay to be displayed on top of the frame if enabled.
-
-Native Functions:
-
-These functions include transforming the video frames to grayscale and then
-performing a variant of Sobel edge detection algorithm on the frame to highlight
-the edges in each bitmap. The bitmap is then transformed back to the RGBA_8888
-format so that it can be displayed onto the canvas in CameraPreview.
+The app must be launched manually the first time after a disconnect in order to
+restart the vehicle monitor.
 
 ## License
 
