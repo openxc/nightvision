@@ -29,15 +29,15 @@ void Java_com_ford_openxc_nightvision_NightvisionView_toGrayscale(JNIEnv* env,
 
     // modify pixels with image processing algorithm
     for(int y = 0; y < infocolor.height; y++) {
-        argb* line = (argb *) pixelscolor;
-        uint8_t * grayline =(uint8_t *) pixelsgray;
+        argb* line = (argb*) pixelscolor;
+        uint8_t* grayline =(uint8_t*) pixelsgray;
         for(int x = 0; x < infocolor.width; x++) {
             grayline[x] = 0.3 * line[x].red + 0.59 * line[x].green +
                 0.11 * line[x].blue;
         }
 
-        pixelscolor =(char *)pixelscolor + infocolor.stride;
-        pixelsgray =(char *) pixelsgray + infogray.stride;
+        pixelscolor =(char*)pixelscolor + infocolor.stride;
+        pixelsgray =(char*) pixelsgray + infogray.stride;
     }
 
     AndroidBitmap_unlockPixels(env, bitmapcolor);
@@ -85,8 +85,8 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
         return;
     }
 
-    for(int y = 0; y <= infogray.height - 1; y++) {
-        for(int x = 0; x < infogray.width - 1; x++) {
+    for(int y = 0; y < infogray.height; y++) {
+        for(int x = 0; x < infogray.width; x++) {
             int sum = 0;
             if(y > 0 && y < infogray.height && x > 0 && x < infogray.width) {
                 // calc X and Y gradients
@@ -144,18 +144,13 @@ void Java_com_ford_openxc_nightvision_NightvisionView_showBitmap(JNIEnv* env,
     }
 
     for(int y = 0; y < infoedge.height; y++) {
-        uint8_t *edgeline = (uint8_t *)pixelsedge;
-        argb *showline = (argb *)pixelsshow;
+        argb* edgeLine = (argb*) (pixelsedge + infoedge.stride * y);
+        argb* showLine = (argb*) (pixelsshow + infoshow.stride * y);
 
         for(int x = 0; x < infoedge.width; x++) {
-            showline[x].alpha = edgeline[x];
-            showline[x].red = edgeline[x];
-            showline[x].green = edgeline[x];
-            showline[x].blue = edgeline[x];
+            showLine[x].alpha = showLine[x].red = showLine[x].green =
+                showLine[x].blue = edgeLine[x].red;
         }
-
-        pixelsedge =(char *)pixelsedge + infoedge.stride;
-        pixelsshow =(char *)pixelsshow + infoshow.stride;
     }
 
     AndroidBitmap_unlockPixels(env, bitmapshow);
