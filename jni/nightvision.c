@@ -1,49 +1,8 @@
 #include "nightvision.h"
 #include <stdbool.h>
 
-void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(
-        JNIEnv* env, jobject thiz, jobject bitmapcolor, jobject bitmapgray) {
-    int result;
-    AndroidBitmapInfo infocolor;
-    if((result = AndroidBitmap_getInfo(env, bitmapcolor, &infocolor)) < 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", result);
-        return;
-    }
-
-    AndroidBitmapInfo infogray;
-    if((result = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
-        LOGE("AndroidBitmap_getInfo() failed ! error=%d", result);
-        return;
-    }
-
-    void* pixelscolor;
-    if((result = AndroidBitmap_lockPixels(env, bitmapcolor,
-                    &pixelscolor)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
-        return;
-    }
-
-    void* pixelsgray;
-    if((result = AndroidBitmap_lockPixels(env, bitmapgray, &pixelsgray)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
-        AndroidBitmap_unlockPixels(env, bitmapcolor);
-        return;
-    }
-
-    // modify pixels with image processing algorithm
-    for(int y = 0; y < infocolor.height; y++) {
-        argb* colorLine = (argb*) (pixelscolor + infocolor.stride * y);
-        uint8_t* grayscaleLine = (uint8_t*) (pixelsgray + infogray.stride * y);
-
-        for(int x = 0; x < infocolor.width; x++) {
-            grayscaleLine[x] = 0.3 * colorLine[x].red
-                + 0.59 * colorLine[x].green
-                + 0.11 * colorLine[x].blue;
-        }
-    }
-
-    AndroidBitmap_unlockPixels(env, bitmapcolor);
-    AndroidBitmap_unlockPixels(env, bitmapgray);
+uint8_t rgbToGrayscale(argb* pixel) {
+    return 0.3 * pixel->red + 0.59 * pixel->green + 0.11 * pixel->blue;
 }
 
 /** Simple Object Detection
@@ -56,31 +15,31 @@ void Java_com_ford_openxc_nightvision_NightvisionView_rgbaToGrayscale(
  * marked so in the mBitmapObjectOverlay.
  */
 jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
-        JNIEnv* env, jobject thiz, jobject bitmapedge, jobject bitmapoverlay) {
-    AndroidBitmapInfo infoedge;
+        JNIEnv* env, jobject thiz, jobject edgeBitmap, jobject overlayBitmap) {
+    AndroidBitmapInfo edgeInfo;
     int result;
-    if((result = AndroidBitmap_getInfo(env, bitmapedge, &infoedge)) < 0) {
+    if((result = AndroidBitmap_getInfo(env, edgeBitmap, &edgeInfo)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", result);
         return false;
     }
 
-    AndroidBitmapInfo infooverlay;
-    if((result = AndroidBitmap_getInfo(env, bitmapoverlay, &infooverlay)) < 0) {
+    AndroidBitmapInfo overlayInfo;
+    if((result = AndroidBitmap_getInfo(env, overlayBitmap, &overlayInfo)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", result);
         return false;
     }
 
-    void* pixelsedge;
-    if((result = AndroidBitmap_lockPixels(env, bitmapedge, &pixelsedge)) < 0) {
+    void* edgePixels;
+    if((result = AndroidBitmap_lockPixels(env, edgeBitmap, &edgePixels)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
         return false;
     }
 
-    void* pixelsoverlay;
-    if((result = AndroidBitmap_lockPixels(env, bitmapoverlay,
-                    &pixelsoverlay)) < 0) {
+    void* overlayPixels;
+    if((result = AndroidBitmap_lockPixels(env, overlayBitmap,
+                    &overlayPixels)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", result);
-        AndroidBitmap_unlockPixels(env, bitmapedge);
+        AndroidBitmap_unlockPixels(env, edgeBitmap);
         return false;
     }
 
@@ -88,21 +47,20 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
     const int OBJECT_DETECT_BLOCK_SIZE_Y = 8;
     const int OBJECT_DETECT_BLOCK_AREA = OBJECT_DETECT_BLOCK_SIZE_X
             * OBJECT_DETECT_BLOCK_SIZE_Y;
-    int OBJECT_DETECT_BLOCK[OBJECT_DETECT_BLOCK_AREA];
 
     bool objectDetected = false;
-    for(int y = (int) (infoedge.height * .25); y < infoedge.height * .75;
+    for(int y = (int) (edgeInfo.height * .25); y < edgeInfo.height * .75;
             y += (OBJECT_DETECT_BLOCK_SIZE_Y / 2)) {
-        uint8_t* edgeline = (uint8_t*) (pixelsedge + infoedge.stride * y);
-        uint8_t* overlayline = (uint8_t*) (pixelsoverlay + infooverlay.stride *
+        uint8_t* edgeline = (uint8_t*) (edgePixels + edgeInfo.stride * y);
+        uint8_t* overlayline = (uint8_t*) (overlayPixels + overlayInfo.stride *
                 y);
-        for(int x = (int) (infoedge.width * .25); x < infoedge.width * .75;
+        for(int x = (int) (edgeInfo.width * .25); x < edgeInfo.width * .75;
                 x += (OBJECT_DETECT_BLOCK_SIZE_X / 2)) {
             int sum = 0;
             for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
                 for(int j = 0; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
                     uint8_t pixel = *(edgeline + x + i + j *
-                            infooverlay.stride);
+                            overlayInfo.stride);
                     if(pixel == 255) {
                         sum++;
                     }
@@ -113,8 +71,8 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
                 for(int i = 0; i < OBJECT_DETECT_BLOCK_SIZE_X; i++) {
                     for(int j = 0; j < OBJECT_DETECT_BLOCK_SIZE_Y; j++) {
                         uint8_t pixel = *(edgeline + x + i + j *
-                                infoedge.stride);
-                        *(overlayline + x + i + j * infooverlay.stride) = 255;
+                                edgeInfo.stride);
+                        *(overlayline + x + i + j * overlayInfo.stride) = 255;
                     }
                 }
                 objectDetected = true;
@@ -122,8 +80,8 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
         }
     }
 
-    AndroidBitmap_unlockPixels(env, bitmapedge);
-    AndroidBitmap_unlockPixels(env, bitmapoverlay);
+    AndroidBitmap_unlockPixels(env, edgeBitmap);
+    AndroidBitmap_unlockPixels(env, overlayBitmap);
 
     return objectDetected;
 }
@@ -136,9 +94,12 @@ jboolean Java_com_ford_openxc_nightvision_NightvisionView_detectObjects(
  * operator uses two 3×3 matrices which are convolved with the original image to
  * calculate approximations of the derivatives - one for horizontal changes, and
  * one for vertical.
+ *
+ * The image bitmap is assumed to be RGB, and this converts each pixel to
+ * grayscale before running the algorithm.
  */
 void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
-        jobject thiz, jobject bitmapgray, jobject bitmapedges) {
+        jobject thiz, jobject imageBitmap, jobject edgeBitmap) {
     int Gx[3][3] = {
         {-1, 0, 1},
         {-2, 0, 2},
@@ -153,51 +114,57 @@ void Java_com_ford_openxc_nightvision_NightvisionView_detectEdges(JNIEnv* env,
 
     uint8_t* imagePixels;
     int ret;
-    uint8_t* pixelsgray;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapgray,
-                    (void*)&pixelsgray)) < 0) {
+    if((ret = AndroidBitmap_lockPixels(env, imageBitmap,
+                    (void*)&imagePixels)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         return;
     }
 
-    uint8_t* pixelsedge;
-    if((ret = AndroidBitmap_lockPixels(env, bitmapedges,
-                    (void*)&pixelsedge)) < 0) {
-        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-        return;
-    }
-
-    AndroidBitmapInfo infogray;
-    if((ret = AndroidBitmap_getInfo(env, bitmapgray, &infogray)) < 0) {
+    AndroidBitmapInfo imageInfo;
+    if((ret = AndroidBitmap_getInfo(env, imageBitmap, &imageInfo)) < 0) {
         LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-        AndroidBitmap_unlockPixels(env, bitmapedges);
         return;
     }
 
-    for(int y = 1; y < infogray.height - 2; y++) {
-        for(int x = 1; x < infogray.width - 2; x++) {
+    uint8_t* edgePixels;
+    if((ret = AndroidBitmap_lockPixels(env, edgeBitmap,
+                    (void*)&edgePixels)) < 0) {
+        LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+        return;
+    }
+
+    AndroidBitmapInfo edgeInfo;
+    if((ret = AndroidBitmap_getInfo(env, edgeBitmap, &edgeInfo)) < 0) {
+        LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+        return;
+    }
+
+    // TODO no use detecting images on the entire thing since we only check for
+    // objects in a small window
+    for(int y = 1; y < imageInfo.height - 1; y++) {
+        for(int x = 1; x < imageInfo.width - 1; x++) {
             int sumX = 0, sumY = 0;
             // calc X and Y gradients
             for(int i = -1; i <= 1; i++) {
                 for(int j = -1; j <= 1; j++) {
-                    uint8_t pixel = *(pixelsgray + x + i +
-                            ((y + j) * infogray.stride));
+                    argb* imageLine = (argb*)(imagePixels +
+                            imageInfo.stride * (y + i));
+                    uint8_t pixel = rgbToGrayscale(&imageLine[x]);
                     sumX += pixel * Gx[i + 1][j + 1];
                     sumY += pixel * Gy[i + 1][j + 1];
                 }
             }
 
             int sum = abs(sumX) + abs(sumY);
-
             if(sum > 255) {
                 sum = 255;
             } else if(sum < 0) {
                 sum = 0;
             }
-            *(pixelsedge + x + y * infogray.stride) = (uint8_t) sum;
+            *(edgePixels + x + y * edgeInfo.stride) = (uint8_t) sum;
         }
     }
 
-    AndroidBitmap_unlockPixels(env, bitmapgray);
-    AndroidBitmap_unlockPixels(env, bitmapedges);
+    AndroidBitmap_unlockPixels(env, imageBitmap);
+    AndroidBitmap_unlockPixels(env, edgeBitmap);
 }

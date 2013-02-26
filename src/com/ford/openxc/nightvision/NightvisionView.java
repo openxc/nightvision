@@ -21,16 +21,14 @@ public class NightvisionView extends WebcamPreview {
 
     private static Paint sOverlayPaint = new Paint();
 
-    private Bitmap mBitmapGray;
     private Bitmap mBitmapEdges;
     private Bitmap mBitmapObjectOverlay;
 
     private boolean mObjectInPreviousFrame = false;
     private MediaPlayer mMediaPlayer;
 
-    public native void rgbaToGrayscale(Bitmap bitmapcolor, Bitmap bitmapgray);
-    public native void detectEdges(Bitmap bitmapgray, Bitmap bitmapedges);
-    public native boolean detectObjects(Bitmap bitmapedge, Bitmap bitmapoverlay);
+    public native void detectEdges(Bitmap imageBitmap, Bitmap edgeBitmap);
+    public native boolean detectObjects(Bitmap edgeBitmap, Bitmap overlayBitmap);
 
     static {
         System.loadLibrary("nightvision");
@@ -56,19 +54,14 @@ public class NightvisionView extends WebcamPreview {
     public void surfaceChanged(SurfaceHolder holder, int format, int winWidth,
             int winHeight) {
         super.surfaceChanged(holder, format, winWidth, winHeight);
-        mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ALPHA_8);
-        mBitmapGray = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ALPHA_8);
         mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
+                Bitmap.Config.ALPHA_8);
+        mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
                 Bitmap.Config.ALPHA_8);
     }
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
-        rgbaToGrayscale(videoBitmap, mBitmapGray);
-        // TODO this is EXTREMELY sensitive, basically everything gets whited
-        // out as an edge
-        detectEdges(mBitmapGray, mBitmapEdges);
+        detectEdges(videoBitmap, mBitmapEdges);
 
         mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
         boolean objectDetected = detectObjects(mBitmapEdges,
