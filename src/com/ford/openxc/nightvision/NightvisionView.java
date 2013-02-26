@@ -8,22 +8,15 @@ import android.graphics.Paint;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 import com.ford.openxc.webcam.WebcamPreview;
 
 public class NightvisionView extends WebcamPreview {
     private final static String TAG = "NightvisionView";
 
-    // TODO these are duplicated from the android-webcam library
-    private final static int IMG_WIDTH = 640;
-    private final static int IMG_HEIGHT = 480;
-
     private static Paint sOverlayPaint = new Paint();
-
     private Bitmap mBitmapEdges;
     private Bitmap mBitmapObjectOverlay;
-
     private boolean mObjectInPreviousFrame = false;
     private MediaPlayer mMediaPlayer;
 
@@ -50,17 +43,24 @@ public class NightvisionView extends WebcamPreview {
         mMediaPlayer = MediaPlayer.create(getContext(), R.raw.alert);
     }
 
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int winWidth,
-            int winHeight) {
-        super.surfaceChanged(holder, format, winWidth, winHeight);
-        mBitmapEdges = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ALPHA_8);
-        mBitmapObjectOverlay = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT,
-                Bitmap.Config.ALPHA_8);
+    void initializeBitmaps(Bitmap videoBitmap) {
+        if(mBitmapEdges == null ||
+                mBitmapEdges.getWidth() != videoBitmap.getWidth() ||
+                mBitmapEdges.getHeight() != videoBitmap.getHeight()) {
+            mBitmapEdges = Bitmap.createBitmap(videoBitmap.getWidth(),
+                    videoBitmap.getHeight(), Bitmap.Config.ALPHA_8);
+        }
+
+        if(mBitmapObjectOverlay == null ||
+                mBitmapObjectOverlay.getWidth() != videoBitmap.getWidth() ||
+                mBitmapObjectOverlay.getHeight() != videoBitmap.getHeight()) {
+            mBitmapObjectOverlay = Bitmap.createBitmap(videoBitmap.getWidth(),
+                    videoBitmap.getHeight(), Bitmap.Config.ALPHA_8);
+        }
     }
 
     protected void drawOnCanvas(Canvas canvas, Bitmap videoBitmap) {
+        initializeBitmaps(videoBitmap);
         detectEdges(videoBitmap, mBitmapEdges);
 
         mBitmapObjectOverlay.eraseColor(Color.TRANSPARENT);
