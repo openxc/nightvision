@@ -12,7 +12,7 @@ lights or daylight.
 **Disclaimer** This application is intended to be used with a display device
 that has a fixed, preferably permanent location in the vehicle. For example,
 mounted on the dash. Never mount anything on the dash such that the driver's
-view is impeded. While the rearview camera application may help increase
+view is impeded. While the night vision camera application may help increase
 visibility, the OpenXC platform does not make any claims of a safety benefit.
 
 ## Dependencies
