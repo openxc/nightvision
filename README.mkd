@@ -90,3 +90,5 @@ detected, it will be highlighted on the display and an alert will sound.
 
 Copyright (c) 2012-2013 Ford Motor Company
 Licensed under the BSD license.
+
+[USB webcam]: http://www.logitech.com/en-us/product/webcam-C110?crid=34
